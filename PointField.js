@@ -27,7 +27,7 @@ function setup() {
 
     console.log("BOWOWOW");  
 
-    let db = new myDatabase();
+    let db = new MyDatabase();
     db.createDatabase();
 
     

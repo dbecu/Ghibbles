@@ -10,9 +10,6 @@ function setup() {
         random(size, windowWidth - size),
         random(size, windowHeight - size));
   }
-  console.log("BOWOWOW");  
-
-  myDatabase.createDatabase();
 }
 
 function draw(){

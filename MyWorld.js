@@ -2,8 +2,8 @@ let world;
 let pointField
 let timer = 0;
 
-let allPossibleBubble;
-let bubbles;
+let nestedBubbles;
+let bubbleInstances;
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -13,9 +13,9 @@ function setup() {
     //Bubbles
     let db = new MyDatabase();
     db.createDatabase();
-    allPossibleBubble = BubbleController.getAllViewBubbles();
+    nestedBubbles = BubbleController.getAllViewBubbles();
 
-    allPossibleBubble.forEach(bub => {
+    nestedBubbles.forEach(bub => {
         bub.isActive = true;
     });
 
@@ -24,58 +24,84 @@ function setup() {
 function draw(){
     background(0, 0, 100);
 
-    allPossibleBubble.forEach(bub => {
-        checkSubBubbles(bub, drawBubble(bub));
-    });
-}
-
-function checkAllBubbles(myFunction){
-    allPossibleBubble.forEach(bub => {
-        checkSubBubbles(bub, myFunction);
-    });
-
-}
-
-function checkSubBubbles(bubble, myFunction){
-    if (bubble.isActive){
-        // The actions
-        myFunction;
-
-        if (bubble.children.length > 0) { 
-            bubble.children.forEach(child => {
-                checkSubBubbles(child, myFunction);
-            });
+    checkAllBubbles(function(bubble){
+        if (bubble.isActive){
+            drawBubble(bubble);
         }
+    });
+}
+
+function checkAllBubbles(func){
+    for (let i = 0; i < nestedBubbles.length; i++){
+        let result = checkNestedBubbles(nestedBubbles[i], func);
+        if (result != null) {
+            return result;
+        }
+    }
+}
+
+function checkNestedBubbles(bubble, func){
+    // The actions
+    let result = func(bubble);
+    if (result != null) {
+        console.log("checkNestedBubbles1-" + result.bubble.name)
+        return result;
+    }
+
+    if (bubble.children.length > 0) { 
+        for (let i = 0; i < bubble.children.length; i++){
+            let child = bubble.children[i];
+            result = checkNestedBubbles(child, func);
+            if (result != null) {
+                console.log("checkNestedBubbles-" + result.bubble.name)
+                return result;
+            }
+
+        }
+    }
+
+    // console.log("checkNestedBubbles- &&&")
+
+}
+
+function pressedOnBubble(bubble){
+    if (bubble.isActive && dist(mouseX, mouseY, bubble.xPos, bubble.yPos) < bubble.radius) {
+        popBubble(bubble);
     }
 
 }
 
+function checkPoppable(bubble){
+    if (bubble.isActive 
+            && dist(mouseX, mouseY, bubble.xPos, bubble.yPos) < bubble.radius //click on circle
+            && bubble.children.length > 0 //has children
+            && bubble.children.find(child => !child.isActive) != null) {  //at least one child is inactive
+
+            console.log("checkPoppable: " + bubble.bubble.name);
+            return bubble;
+    }
+}
+
 function mousePressed(){
-    console.log(allPossibleBubble);
-
-    checkAllBubbles();
-
-    allPossibleBubble
-        .filter(bub => bub.isActive)
-        .filter(bub => dist(mouseX, mouseY, bub.xPos, bub.yPos) < bub.radius)
-        .forEach(bub => {
-            popBubble(bub);
-            
-        })
+    // checkAllBubbles(pressedOnBubble);'
+    let bubbleToPop = checkAllBubbles(checkPoppable);
+    console.log(bubbleToPop);
+    if (bubbleToPop != null) { 
+        console.log("!!!!!");
+        popBubble(bubbleToPop); 
+    }
 }
 
 function popBubble(parentBubble){
     parentBubble.children.forEach(child => {
-        console.log(child);
-
         child.isActive = true;
 
         let space = random(-80, 80);
 
         child.color = color(0, 100, 80);
         child.radius -= 20;
-        child.xPos = bub.xPos + space;
-        child.yPos = bub.yPos + space;
+        child.xPos = parentBubble.xPos + space;
+        child.yPos = parentBubble.yPos + space;
     })
 
 }
