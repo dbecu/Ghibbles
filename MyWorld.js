@@ -7,7 +7,7 @@ let bubbleInstances;
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
-    colorMode(HSL, 360, 100, 100);
+    colorMode(HSB, 360, 100, 100);
     ellipseMode(RADIUS);
 
     //Bubbles
@@ -44,7 +44,6 @@ function checkNestedBubbles(bubble, func){
     // The actions
     let result = func(bubble);
     if (result != null) {
-        console.log("checkNestedBubbles1-" + result.bubble.name)
         return result;
     }
 
@@ -53,15 +52,10 @@ function checkNestedBubbles(bubble, func){
             let child = bubble.children[i];
             result = checkNestedBubbles(child, func);
             if (result != null) {
-                console.log("checkNestedBubbles-" + result.bubble.name)
                 return result;
             }
-
         }
     }
-
-    // console.log("checkNestedBubbles- &&&")
-
 }
 
 function pressedOnBubble(bubble){
@@ -77,33 +71,39 @@ function checkPoppable(bubble){
             && bubble.children.length > 0 //has children
             && bubble.children.find(child => !child.isActive) != null) {  //at least one child is inactive
 
-            console.log("checkPoppable: " + bubble.bubble.name);
             return bubble;
     }
 }
 
 function mousePressed(){
-    // checkAllBubbles(pressedOnBubble);'
     let bubbleToPop = checkAllBubbles(checkPoppable);
     console.log(bubbleToPop);
     if (bubbleToPop != null) { 
-        console.log("!!!!!");
         popBubble(bubbleToPop); 
     }
 }
 
 function popBubble(parentBubble){
-    parentBubble.children.forEach(child => {
-        child.isActive = true;
+    let distanceFromParent = parentBubble.radius/2;
+    let numChildren = parentBubble.children.length;
+    for (let i = 0; i < numChildren; i++) {
+        parentBubble.children[i].isActive = true;
 
-        let space = random(-80, 80);
+        let angle = TWO_PI / numChildren * i; // Calculate angle for each smaller circle
+        let offsetX = cos(angle) * (parentBubble.radius + distanceFromParent); // X-coordinate offset from the main circle
+        let offsetY = sin(angle) * (parentBubble.radius + distanceFromParent); // Y-coordinate offset from the main circle
+        let circleX = parentBubble.xPos + offsetX; // X-coordinate of the smaller circle
+        let circleY = parentBubble.yPos + offsetY; // Y-coordinate of the smaller circle
+        
+        parentBubble.children[i].color = color(
+            hue(parentBubble.color), 
+            saturation(parentBubble.color), 
+            brightness(parentBubble.color) - 10);
 
-        child.color = color(0, 100, 80);
-        child.radius -= 20;
-        child.xPos = parentBubble.xPos + space;
-        child.yPos = parentBubble.yPos + space;
-    })
-
+        parentBubble.children[i].radius = parentBubble.radius * 0.6;
+        parentBubble.children[i].xPos = circleX;
+        parentBubble.children[i].yPos = circleY;    
+    }
 }
 
 function drawBubble(bubble){
