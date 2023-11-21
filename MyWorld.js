@@ -20,14 +20,23 @@ function setup() {
 
     viewBubbles = [];
     for(let bubble of dataBubbles){
-        viewBubbles.push(new ViewBubble(bubble));
+        viewBubbles.push(new ViewBubble(bubble, random(100, width - 100), random(100, height - 100)));
     }
 }
 
 function draw(){
     background(0, 0, 100);
     for(let bubble of viewBubbles){
-        drawBubble(bubble);
+        bubble.update();
+        display(bubble);
+    }
+
+    for(let bubble of viewBubbles.filter(bub => bub.data.type == BubbleType.Genre)){
+        if (random(100) < 1) {
+            let newX = constrain(bubble.xPos += random(-100, 100), 50, width-50)
+            let newY = constrain(bubble.yPos += random(-100, 100), 50, height-50)
+            bubble.setNewPosition(newX, newY);
+        }
     }
 }
 
@@ -69,39 +78,46 @@ function mousePressed(){
 }
 
 function popBubble(vBubble){
-    let distanceFromParent = vBubble.radius/2;
 
+    //Finds which child bubble is already popped active from other parent bubble
     let bubblesToPop = [];
+    //For each child in vBubble (bubble that wants to be popped)
     for (let child of vBubble.data.directChildren) {
+        //Is child already in viewBubbles? If not, to below
         if (!viewBubbles.some(v => v.data.id == child.id)){
             bubblesToPop.push(child);
 
         } else {
-            console.log("popBubble!!");
-            console.log(child);
-
+            //Added parent!
+            let index = viewBubbles.findIndex(bub => bub.data.id == child.id);
+            viewBubbles[index].anchoredTo.push(vBubble);
         }
     }  
 
-    // for(let daravb of bubblesToPop) {
+    let distanceFromParent = vBubble.radius/2;
+    let randomRotate = random(TWO_PI);
     for (let i = 0; i < bubblesToPop.length; i++) {
-        let childBubble = new ViewBubble(bubblesToPop[i]);
+        let childBubble = new ViewBubble(bubblesToPop[i], vBubble.xPos, vBubble.yPos);
 
-        let angle = TWO_PI / bubblesToPop.length * i; // Calculate angle for each smaller circle
+        let angle = ((TWO_PI / bubblesToPop.length * i) + randomRotate) % 360; // Calculate angle for each smaller circle
+        childBubble.initialAnglePos = angle;
+
         let offsetX = cos(angle) * (vBubble.radius + distanceFromParent); // X-coordinate offset from the main circle
         let offsetY = sin(angle) * (vBubble.radius + distanceFromParent); // Y-coordinate offset from the main circle
         let circleX = vBubble.xPos + offsetX; // X-coordinate of the smaller circle
         let circleY = vBubble.yPos + offsetY; // Y-coordinate of the smaller circle
-        
+        childBubble.setNewPosition(circleX, circleY);
+
         childBubble.color = color(
             hue(vBubble.color), 
             saturation(vBubble.color), 
             brightness(vBubble.color) - 10);
 
         childBubble.radius = vBubble.radius * 0.8;
-        childBubble.xPos = circleX;
-        childBubble.yPos = circleY;    
+        // childBubble.xPos = circleX;
+        // childBubble.yPos = circleY;    
 
+        childBubble.anchoredTo.push(vBubble);
         viewBubbles.push(childBubble);
 
         // console.log(childBubble);
@@ -109,16 +125,6 @@ function popBubble(vBubble){
     }
 }
 
-function drawBubble(vBubble){
-    noFill();
-    stroke(color(255, 0, 0, 10));
-    // fill(bubble.color);
-    circle(vBubble.xPos, vBubble.yPos, vBubble.radius);
-    strokeWeight(2);
-    // point(bubble.xPos, bubble.yPos);
-
-    noStroke();
-    fill(color(0, 0, 0));
-    textAlign(CENTER);
-    text(vBubble.data.name, vBubble.xPos, vBubble.yPos);
+function display(vBubble){
+    vBubble.display();
 }
