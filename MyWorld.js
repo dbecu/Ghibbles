@@ -5,115 +5,120 @@ let timer = 0;
 let nestedBubbles;
 let bubbleInstances;
 
+let dataBubbles;
+let viewBubbles;
+
 function setup() {
     createCanvas(windowWidth, windowHeight);
     colorMode(HSB, 360, 100, 100);
     ellipseMode(RADIUS);
 
-    //Bubbles
-    let db = new MyDatabase();
-    db.createDatabase();
-    nestedBubbles = BubbleController.getAllViewBubbles();
+    //Testing
+    bdb = new BubbleDatabase();
+    bdb.createDatabase();
+    dataBubbles = BubbleController.getAllBubbles();
 
-    nestedBubbles.forEach(bub => {
-        bub.isActive = true;
-    });
-
+    viewBubbles = [];
+    for(let bubble of dataBubbles){
+        viewBubbles.push(new ViewBubble(bubble));
+    }
 }
 
 function draw(){
     background(0, 0, 100);
-
-    checkAllBubbles(function(bubble){
-        if (bubble.isActive){
-            drawBubble(bubble);
-        }
-    });
-}
-
-function checkAllBubbles(func){
-    for (let i = 0; i < nestedBubbles.length; i++){
-        let result = checkNestedBubbles(nestedBubbles[i], func);
-        if (result != null) {
-            return result;
-        }
+    for(let bubble of viewBubbles){
+        drawBubble(bubble);
     }
 }
 
-function checkNestedBubbles(bubble, func){
-    // The actions
-    let result = func(bubble);
-    if (result != null) {
-        return result;
-    }
-
-    if (bubble.children.length > 0) { 
-        for (let i = 0; i < bubble.children.length; i++){
-            let child = bubble.children[i];
-            result = checkNestedBubbles(child, func);
-            if (result != null) {
-                return result;
-            }
-        }
-    }
-}
 
 function pressedOnBubble(bubble){
-    if (bubble.isActive && dist(mouseX, mouseY, bubble.xPos, bubble.yPos) < bubble.radius) {
+    if (dist(mouseX, mouseY, bubble.xPos, bubble.yPos) < bubble.radius) {
         popBubble(bubble);
     }
 
 }
 
-function checkPoppable(bubble){
-    if (bubble.isActive 
-            && dist(mouseX, mouseY, bubble.xPos, bubble.yPos) < bubble.radius //click on circle
-            && bubble.children.length > 0 //has children
-            && bubble.children.find(child => !child.isActive) != null) {  //at least one child is inactive
+function checkPoppable(vBubble){
+    // let itselfIsActive = viewBubbles.includes(vBubble);
+    let clickOnCircle = dist(mouseX, mouseY, vBubble.xPos, vBubble.yPos) < vBubble.radius;
+    let hasChildren = vBubble.data.directChildren.length > 0;
 
-            return bubble;
+    // Check if bubble that wants to be popped has children that is already active on screen
+    let inactiveBubbles = 0;
+    for (let child of vBubble.data.directChildren) {
+        if (!viewBubbles.some(v => v.data.id == child.id)){
+            inactiveBubbles++
+        }
+    }      
+    
+    if (clickOnCircle && hasChildren && !(inactiveBubbles <= 0)) {      
+        return vBubble;
     }
 }
 
 function mousePressed(){
-    let bubbleToPop = checkAllBubbles(checkPoppable);
-    console.log(bubbleToPop);
-    if (bubbleToPop != null) { 
-        popBubble(bubbleToPop); 
+    let toPop = null;
+
+    for(let bubble of viewBubbles){
+        toPop = checkPoppable(bubble);
+        if (toPop != null) { 
+            popBubble(toPop); 
+        }
     }
 }
 
-function popBubble(parentBubble){
-    let distanceFromParent = parentBubble.radius/2;
-    let numChildren = parentBubble.children.length;
-    for (let i = 0; i < numChildren; i++) {
-        parentBubble.children[i].isActive = true;
+function popBubble(vBubble){
+    let distanceFromParent = vBubble.radius/2;
 
-        let angle = TWO_PI / numChildren * i; // Calculate angle for each smaller circle
-        let offsetX = cos(angle) * (parentBubble.radius + distanceFromParent); // X-coordinate offset from the main circle
-        let offsetY = sin(angle) * (parentBubble.radius + distanceFromParent); // Y-coordinate offset from the main circle
-        let circleX = parentBubble.xPos + offsetX; // X-coordinate of the smaller circle
-        let circleY = parentBubble.yPos + offsetY; // Y-coordinate of the smaller circle
+    let bubblesToPop = [];
+    for (let child of vBubble.data.directChildren) {
+        if (!viewBubbles.some(v => v.data.id == child.id)){
+            bubblesToPop.push(child);
+
+        } else {
+            console.log("popBubble!!");
+            console.log(child);
+
+        }
+    }  
+
+    // for(let daravb of bubblesToPop) {
+    for (let i = 0; i < bubblesToPop.length; i++) {
+        let childBubble = new ViewBubble(bubblesToPop[i]);
+
+        let angle = TWO_PI / bubblesToPop.length * i; // Calculate angle for each smaller circle
+        let offsetX = cos(angle) * (vBubble.radius + distanceFromParent); // X-coordinate offset from the main circle
+        let offsetY = sin(angle) * (vBubble.radius + distanceFromParent); // Y-coordinate offset from the main circle
+        let circleX = vBubble.xPos + offsetX; // X-coordinate of the smaller circle
+        let circleY = vBubble.yPos + offsetY; // Y-coordinate of the smaller circle
         
-        parentBubble.children[i].color = color(
-            hue(parentBubble.color), 
-            saturation(parentBubble.color), 
-            brightness(parentBubble.color) - 10);
+        childBubble.color = color(
+            hue(vBubble.color), 
+            saturation(vBubble.color), 
+            brightness(vBubble.color) - 10);
 
-        parentBubble.children[i].radius = parentBubble.radius * 0.6;
-        parentBubble.children[i].xPos = circleX;
-        parentBubble.children[i].yPos = circleY;    
+        childBubble.radius = vBubble.radius * 0.8;
+        childBubble.xPos = circleX;
+        childBubble.yPos = circleY;    
+
+        viewBubbles.push(childBubble);
+
+        // console.log(childBubble);
+
     }
 }
 
-function drawBubble(bubble){
-    // noStroke();
-    fill(bubble.color);
-    circle(bubble.xPos, bubble.yPos, bubble.radius);
+function drawBubble(vBubble){
+    noFill();
+    stroke(color(255, 0, 0, 10));
+    // fill(bubble.color);
+    circle(vBubble.xPos, vBubble.yPos, vBubble.radius);
     strokeWeight(2);
     // point(bubble.xPos, bubble.yPos);
 
+    noStroke();
     fill(color(0, 0, 0));
     textAlign(CENTER);
-    text(bubble.bubble.name, bubble.xPos, bubble.yPos);
+    text(vBubble.data.name, vBubble.xPos, vBubble.yPos);
 }

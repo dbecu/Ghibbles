@@ -1,28 +1,23 @@
 class ViewBubble{
     constructor(bubble){
-        this.bubble = bubble;
-        this.xPos = random(width);
-        this.yPos = random(height);
+        this.data = bubble;
+        this.xPos = random(100, width - 100);
+        this.yPos = random(100, height- 100);
         
-        this.radius = 50;
-        this.isActive = false;
+        this.radius = 100;
+        this.isActive = true;
         this.color = color("#99aaff");
-        
-        this.children = [];
+
+        this.anchoredTo = [];
     }
 
     static constructBubble(bubble, children){
         this.bubble = bubble;
-        this.children = children;
         return this;
     }
 
     changePos(xPos, yPos){
         this.xPos = xPos;
         this.yPos = yPos;
-    }
-
-    addToChildren(viewBubble){
-        this.children.push(viewBubble);
     }
 }
