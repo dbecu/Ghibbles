@@ -56,7 +56,7 @@ class ViewBubble{
     display(){
         noFill();
         stroke(color(255, 0, 0, 100));
-        // fill(bubble.color);
+        fill(color(0, 0.1));
         circle(this.xPos, this.yPos, this.radius);
         strokeWeight(2);
         // point(bubble.xPos, bubble.yPos);

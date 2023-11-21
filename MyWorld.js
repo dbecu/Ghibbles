@@ -1,12 +1,12 @@
-let world;
-let pointField
-let timer = 0;
-
-let nestedBubbles;
-let bubbleInstances;
-
 let dataBubbles;
 let viewBubbles;
+
+//TODO: Push nonrelated bubbles away from each other
+//TODO: Bubbles should always stay in frame
+//TODO: Put colors to bubbles
+//TODO: Put images to bubbles
+//TODO: Child bubbles can move dynamically around parent. BUt they bump on children on same level (same type?)
+//TODO: Have line between relate bubbles
 
 function setup() {
     createCanvas(windowWidth, windowHeight);

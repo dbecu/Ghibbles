@@ -22,7 +22,7 @@ class BubbleController{
                     for(let characterInstance of db.selectCharacters(movieBubble.id)){
                         let characterBubble = Parser.parse(characterInstance, BubbleType.Character);
         
-                        for(let attributeInstance of db.selectCharacters(characterBubble.id)){
+                        for(let attributeInstance of db.selectAttributes(characterBubble.id)){
                             let attributeBubble = Parser.parse(attributeInstance, BubbleType.Attribute);
             
                             characterBubble.addDirectChildren(attributeBubble)
