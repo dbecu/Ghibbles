@@ -59,7 +59,7 @@ class BubbleDatabase{
     }
 
     createAllTables(){
-        alasql("CREATE TABLE bubbles (name string, imageUrl string, id number)"); 
+        alasql("CREATE TABLE bubbles (name string, color string, imageUrl string, id number)"); 
         alasql("CREATE TABLE genres (id number)"); 
         alasql("CREATE TABLE subgenres (id number, genreId number)"); 
         alasql("CREATE TABLE movies (id number)"); 
@@ -95,37 +95,37 @@ class BubbleDatabase{
 
     addInstances(){
         //Bubbles
-        this.addToTable("bubbles", ["Howls Moving Castle", "url", 1]);
-        this.addToTable("bubbles", ["Kikis Delivery Service", "url", 2]);
-        this.addToTable("bubbles", ["Ponyo", "url", 3]);
-        this.addToTable("bubbles", ["Howl", "url", 4]);
-        this.addToTable("bubbles", ["Sohpie", "url", 5]);
-        this.addToTable("bubbles", ["Calcifer", "url", 6]);
-        this.addToTable("bubbles", ["Brave", "url", 7]);
-        this.addToTable("bubbles", ["Sassy", "url", 8]);
-        this.addToTable("bubbles", ["Demon", "url", 9]);
-        this.addToTable("bubbles", ["Witch", "url", 10]);
-        this.addToTable("bubbles", ["Kiki", "url", 11]);
-        this.addToTable("bubbles", ["Jiji", "url", 12]);
-        this.addToTable("bubbles", ["Curious", "url", 13]);
-        this.addToTable("bubbles", ["Romance", "url", 14]);
-        this.addToTable("bubbles", ["Adventure", "url", 15]);
-        this.addToTable("bubbles", ["Fantasy", "url", 16]);
-        this.addToTable("bubbles", ["Fantasy Romance", "url", 17]);
-        this.addToTable("bubbles", ["Fairy Tale Romance", "url", 18]);
-        this.addToTable("bubbles", ["Young Adult", "url", 19]);
-        this.addToTable("bubbles", ["Epic Adventure", "url", 20]);
-        this.addToTable("bubbles", ["Quest Adventure", "url", 21]);
-        this.addToTable("bubbles", ["Steampunk Fantasy", "url", 22]);
-        this.addToTable("bubbles", ["Magical Realism", "url", 23]);
-        this.addToTable("bubbles", ["Witchcraft Fantasy", "url", 24]);
+        this.addToTable("bubbles", ["Howls Moving Castle", "#4287f5", "img/howl.png", 1]);
+        this.addToTable("bubbles", ["Kikis Delivery Service", "#4287f5", "url", 2]);
+        this.addToTable("bubbles", ["Ponyo", "#4287f5", "url", 3]);
+        this.addToTable("bubbles", ["Howl", "#4287f5", "url", 4]);
+        this.addToTable("bubbles", ["Sohpie", "#4287f5", "url", 5]);
+        this.addToTable("bubbles", ["Calcifer", "#4287f5", "url", 6]);
+        this.addToTable("bubbles", ["Brave", "#4287f5", "url", 7]);
+        this.addToTable("bubbles", ["Sassy", "#4287f5", "url", 8]);
+        this.addToTable("bubbles", ["Demon", "#4287f5", "url", 9]);
+        this.addToTable("bubbles", ["Witch", "#4287f5", "url", 10]);
+        this.addToTable("bubbles", ["Kiki", "#4287f5", "url", 11]);
+        this.addToTable("bubbles", ["Jiji", "#4287f5", "url", 12]);
+        this.addToTable("bubbles", ["Curious", "#4287f5", "url", 13]);
+        this.addToTable("bubbles", ["Romance", "#4287f5", "url", 14]);
+        this.addToTable("bubbles", ["Adventure", "#4287f5", "url", 15]);
+        this.addToTable("bubbles", ["Fantasy", "#4287f5", "url", 16]);
+        this.addToTable("bubbles", ["Fantasy Romance", "#4287f5", "url", 17]);
+        this.addToTable("bubbles", ["Fairy Tale Romance", "#4287f5", "url", 18]);
+        this.addToTable("bubbles", ["Young Adult", "#4287f5", "url", 19]);
+        this.addToTable("bubbles", ["Epic Adventure", "#4287f5", "url", 20]);
+        this.addToTable("bubbles", ["Quest Adventure", "#4287f5", "url", 21]);
+        this.addToTable("bubbles", ["Steampunk Fantasy", "#4287f5", "url", 22]);
+        this.addToTable("bubbles", ["Magical Realism", "#4287f5", "url", 23]);
+        this.addToTable("bubbles", ["Witchcraft Fantasy", "#4287f5", "url", 24]);
 
         //genres
         this.addToTable("genres", [14]);
         this.addToTable("genres", [15]);
         this.addToTable("genres", [16]);
 
-        //genres
+        //subgenres
         this.addToTable("subgenres", [17, 14]);
         this.addToTable("subgenres", [18, 14]);
         this.addToTable("subgenres", [19, 14]);
