@@ -5,9 +5,9 @@ let canvas;
 
 // YA TODO: Have line between relate bubbles
 // YA TODO: Bubbles should always stay in frame
+// YA TODO: Bubbles should always stay in frame
 
 //TODO: Push nonrelated bubbles away from each other
-//TODO: Bubbles should always stay in frame
 //TODO: Put colors to bubbles
 //TODO: Put images to bubbles
 //TODO: Child bubbles can move dynamically around parent. BUt they bump on children on same level (same type?)
@@ -28,7 +28,9 @@ function setup() {
     viewBubbles = [];
     for(let bubble of dataBubbles){
         let amount = 100;
-        viewBubbles.push(new ViewBubble(bubble, random(amount, width - amount), random(amount, height - amount)));
+        let bub = new ViewBubble(bubble, random(amount, width - amount), random(amount, height - amount));
+        bub.radius = min(width, height) / 8;
+        viewBubbles.push(bub);
     }
 }
 
@@ -73,7 +75,7 @@ function draw(){
 
     for(let bubble of viewBubbles.filter(bub => bub.data.type == BubbleType.Genre)){
         if (random(100) < 0.1) {
-            let randomIndex = 200;
+            let randomIndex = 40;
 
             let newX = bubble.xPos += random(-randomIndex, randomIndex);
             let newY = bubble.yPos += random(-randomIndex, randomIndex);
@@ -120,7 +122,8 @@ function bubbleInactiveChildren(vBubble){
             //Added parent!
             let index = viewBubbles.findIndex(bub => bub.data.id == child.id);
             if (!viewBubbles[index].anchoredTo.includes(vBubble)){
-                viewBubbles[index].anchoredTo.push(vBubble);
+                viewBubbles[index].addToAnchorList(vBubble);
+                // viewBubbles[index].anchoredTo.push(vBubble);
             }
         }
     }  
@@ -154,6 +157,8 @@ function popBubble(vBubble){
             hue(vBubble.color), 
             saturation(vBubble.color), 
             brightness(vBubble.color) - 10);
+        childBubble.color.setAlpha(0.8);
+
         childBubble.radius = vBubble.radius * 0.8;
 
         childBubble.anchoredTo.push(vBubble);

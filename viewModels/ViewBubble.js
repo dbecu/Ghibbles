@@ -1,6 +1,7 @@
 class ViewBubble{
     #xPos;
     #yPos;
+    #anchoredTo;
 
     constructor(bubble, xPos = width/2, yPos = height/2){
         this.data = bubble;
@@ -9,13 +10,14 @@ class ViewBubble{
         
         this.radius = 100;
         this.isActive = true;
-        this.color = color("#99aaff");
+        this.color = bubble.color;
         this.isHighlighted = false;
 
         //xPos, yPos, damp, mass, springInput
-        this.springMovement = new SpringMovement(this.xPos, this.yPos, 0.6, 20.0, 0.1);
-        this.moving = false;
+        this.springMovement = new SpringMovement(this.xPos, this.yPos, 0.6, 22.0, 0.1);
         // this.springMovement = new SpringMovement(this.xPos, this.yPos, 0.95, 9.0, 0.1);
+
+        this.moving = false;
 
         // Child functionality
         this.anchoredTo = [];
@@ -25,6 +27,11 @@ class ViewBubble{
     static constructBubble(bubble){
         this.bubble = bubble;
         return this;
+    }
+
+    addToAnchorList(vBubble){
+        this.anchoredTo.push(vBubble);
+
     }
 
     setNewPosition(x, y){
@@ -45,7 +52,7 @@ class ViewBubble{
     }
 
     update(){
-        let buffer = 20;
+        let buffer = 10;
 
         if (this.anchoredTo.length >= 1){
             let vBubble = this.anchoredTo[0];
@@ -113,26 +120,40 @@ class ViewBubble{
 
 
         if (this.isActive){
-            fill(color(50, 100, 100, 0.3));
+            // fill(color(50, 100, 100, 0.6));
+            fill(this.color);
         }else {
             fill(color(10, 10, 10, 0.1));
         }
+
         circle(this.xPos, this.yPos, this.radius);
-        strokeWeight(2);
     
+        if (this.isActive){
+            fill(color(0));
+        }else {
+            fill(color(0, 0.4));
+        }
         noStroke();
-        fill(color(0, 0, 0));
         textAlign(CENTER);
         text(this.data.name, this.xPos, this.yPos);    
     }
 
     #displayRelation(){
-        stroke(color(100, 60, 50));
-        strokeWeight(2);
+        if (this.isHighlighted){
+            stroke(color(100, 90, 90, 1)); //HSB
+            strokeWeight(4);
+        } else {
+            stroke(color(200, 60, 50, 0.4));
+            strokeWeight(2);
+        }
 
         for(let a of this.anchoredTo){
             line(this.xPos, this.yPos, a.xPos, a.yPos);
         }
+    }
+
+    #displayAnchorChanges(vBubble){
+        
     }
 
 }

@@ -108,9 +108,9 @@ class BubbleDatabase{
         this.addToTable("bubbles", ["Kiki", "#4287f5", "url", 11]);
         this.addToTable("bubbles", ["Jiji", "#4287f5", "url", 12]);
         this.addToTable("bubbles", ["Curious", "#4287f5", "url", 13]);
-        this.addToTable("bubbles", ["Romance", "#4287f5", "url", 14]);
-        this.addToTable("bubbles", ["Adventure", "#4287f5", "url", 15]);
-        this.addToTable("bubbles", ["Fantasy", "#4287f5", "url", 16]);
+        this.addToTable("bubbles", ["Romance", "#ff0000", "url", 14]);
+        this.addToTable("bubbles", ["Adventure", "#00ff5e", "url", 15]);
+        this.addToTable("bubbles", ["Fantasy", "#d000ff", "url", 16]);
         this.addToTable("bubbles", ["Fantasy Romance", "#4287f5", "url", 17]);
         this.addToTable("bubbles", ["Fairy Tale Romance", "#4287f5", "url", 18]);
         this.addToTable("bubbles", ["Young Adult", "#4287f5", "url", 19]);
