@@ -10,6 +10,15 @@ class Bubble{
     }
 
     addDirectChildren(bubbles){
+        for(let bubble of bubbles){
+            //Does not add prexisting bubbles
+            if (!this.directChildren.some(bub => bub.id == bubble.id)){
+                this.directChildren.push(bubble);
+            }
+        }
+    }
+
+    addDirectChild(bubbles){
         this.directChildren.push(bubbles);
     }
 }

@@ -3,6 +3,8 @@ let viewBubbles;
 
 let canvas;
 
+let controller;
+
 // YA TODO: Have line between relate bubbles
 // YA TODO: Bubbles should always stay in frame
 // YA TODO: Bubbles should always stay in frame
@@ -15,15 +17,17 @@ let canvas;
 //TODO: Bubble overlap
 //TODO: CHild bubble with more than one parent anchor has n amount of colours
 
+function preload() {
+    this.controller = new BubbleController();
+}
+
 function setup() {
     canvas = createCanvas(windowWidth, windowHeight);
     colorMode(HSB, 360, 100, 100);
     ellipseMode(RADIUS);
 
     //Testing
-    bdb = new BubbleDatabase();
-    bdb.createDatabase();
-    dataBubbles = BubbleController.getAllBubbles();
+    dataBubbles = this.controller.getAllBubbles();
 
     viewBubbles = [];
     for(let bubble of dataBubbles){
