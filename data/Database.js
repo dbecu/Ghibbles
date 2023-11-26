@@ -1,11 +1,28 @@
 class Database{
+
+    #imagePath = "./data/img/";
+    #filePath = "./data/database/";
     
     constructor(){
         this.#loadAllTables();
     }
 
+    getImages(){
+        this.images = {};
+
+        for (var g = 0; g < this.bubblesTable.getRowCount(); g++){
+
+            let path = `${this.#imagePath}${this.bubblesTable.getRow(g).get(2)}`;
+            // console.log("loadImage(path)");
+            // console.log(loadImage(path));
+            this.images[this.bubblesTable.getRow(g).get(2)] = { image: loadImage(path) };
+        }
+
+        return this.images;
+    }
+
     #loadAllTables(){
-        this.bubblesTable = this.#loadTableFormat("Bubbles");;
+        this.bubblesTable = this.#loadTableFormat("Bubbles");
         this.genreTable = this.#loadTableFormat("Genre");
         this.subgenreLinkTable = this.#loadTableFormat("subgenresLink");
         this.moviesTable = this.#loadTableFormat("movies");
@@ -14,7 +31,7 @@ class Database{
     }
 
     #loadTableFormat(name){
-        let path = `./data/database/${name}.csv`;
+        let path = `${this.#filePath}${name}.csv`;
         let table = loadTable(path, "csv", "header");
         return table;
     }

@@ -5,6 +5,10 @@ let canvas;
 
 let controller;
 
+let img;
+let maskShape;
+let editImg;
+
 // YA TODO: Have line between relate bubbles
 // YA TODO: Bubbles should always stay in frame
 // YA TODO: Bubbles should always stay in frame
@@ -18,28 +22,101 @@ let controller;
 //TODO: CHild bubble with more than one parent anchor has n amount of colours
 
 function preload() {
-    this.controller = new BubbleController();
-}
+    createCanvas(windowWidth, windowHeight);
+    this.controller = BubbleController.getInstance();
+    //Creating mask
+    this.img = loadImage("./data/img/howl.png");
 
+    console.log(controller);
+    console.log("??");
+
+}
 function setup() {
-    canvas = createCanvas(windowWidth, windowHeight);
+
+
+    resizeCanvas(windowWidth, windowHeight);
     colorMode(HSB, 360, 100, 100);
     ellipseMode(RADIUS);
 
-    //Testing
+    // setupImage();
+
     dataBubbles = this.controller.getAllBubbles();
 
     viewBubbles = [];
     for(let bubble of dataBubbles){
         let amount = 100;
-        let bub = new ViewBubble(bubble, random(amount, width - amount), random(amount, height - amount));
-        bub.radius = min(width, height) / 8;
+        let radius = min(width, height) / 8;
+
+        let bub = new ViewBubble(
+            bubble, 
+            radius, 
+            random(amount, width - amount), 
+            random(amount, height - amount));
         viewBubbles.push(bub);
     }
+
+    // console.log(viewBubbles[0].image);
+    // console.log(this.editImg);
+    // image(viewBubbles[0].image, 0, 0);
+    // image(viewBubbles[0].getImageFromPath(), 100, 100);
+    image(this.img, 0, 0); 
+
+    
 }
 
-function draw(){
+function setupImage(){
+    imageMode(CORNER);
+    length = 100;
+    newHeight = this.img.height;
+    newWidth = this.img.width;
+
+    //if height is cmaller
+    if (this.img.height < this.img.width){
+        newHeight = length;
+        newWidth = (this.img.width / this.img.height) * 100;
+    } else {
+        newWidth = length;
+        newHeight = (this.img.height / this.img.width) * 100;
+    }
+    this.img.resize(newWidth, newHeight);
+
+    widthStartPoint = (newWidth / 2) - (length / 2);
+    heightStartPoint = (newHeight / 2) - (length / 2);
+
+    this.editImg = createImage(length, length);
+    this.editImg.loadPixels();
+    for (let x = 0; x < this.editImg.width; x++) {
+    for (let y = 0; y < this.editImg.height; y++) {
+            let c = this.img.get(widthStartPoint + x, heightStartPoint + y);
+            // console.log(c);
+            this.editImg.set(x, y, c);
+        }
+    }
+    this.editImg.updatePixels();
+
+    this.maskShape = createGraphics(length, length);
+    this.maskShape.circle(length/2, length/2, length);
+
+    this.editImg.mask(this.maskShape);
+    tint(color(100, 80, 80));
+    image(this.editImg, 0, 0); 
+}
+
+function dkraw(){
     background(0, 0, 100);
+
+    //Test
+    // image(this.img, 0, 0);
+    // image(this.maskShape, 0, 0);
+    // image(this.editImg, 0, 0); 
+    // console.log("viewBubbles[0].image");
+
+
+    //Framerate
+    textSize(16);
+    fill(0);
+    textAlign(LEFT, TOP);  
+    text(frameRate(), 10, 10);
 
     //Check collisions
     //Collision & Overlapping Rules
@@ -145,7 +222,7 @@ function popBubble(vBubble){
     let randomRotate = random(TWO_PI);
     for (let i = 0; i < bubblesToPop.length; i++) {
         //Creating new viewBubble
-        let childBubble = new ViewBubble(bubblesToPop[i], vBubble.xPos, vBubble.yPos);
+        let childBubble = new ViewBubble(bubblesToPop[i], vBubble.radius * 0.8, vBubble.xPos, vBubble.yPos);
 
         //Deciding initial angle
         let angle = ((TWO_PI / bubblesToPop.length * i) + randomRotate) % 360; // Calculate angle for each smaller circle
@@ -162,8 +239,6 @@ function popBubble(vBubble){
             saturation(vBubble.color), 
             brightness(vBubble.color) - 10);
         childBubble.color.setAlpha(0.8);
-
-        childBubble.radius = vBubble.radius * 0.8;
 
         childBubble.anchoredTo.push(vBubble);
         viewBubbles.push(childBubble);

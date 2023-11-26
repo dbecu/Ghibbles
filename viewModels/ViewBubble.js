@@ -3,16 +3,16 @@ class ViewBubble{
     #yPos;
     #anchoredTo;
 
-    constructor(bubble, xPos = width/2, yPos = height/2){
+    constructor(bubble, radius, xPos = width/2, yPos = height/2){
         this.data = bubble;
         this.xPos = xPos;
         this.yPos = yPos;
         
-        this.radius = 100;
+        this.radius = radius;
         this.isActive = true;
         this.color = bubble.color;
-        this.isHighlighted = false;
-
+        this.isHighlighted = false;   
+        
         //xPos, yPos, damp, mass, springInput
         this.springMovement = new SpringMovement(this.xPos, this.yPos, 0.6, 22.0, 0.1);
         // this.springMovement = new SpringMovement(this.xPos, this.yPos, 0.95, 9.0, 0.1);
@@ -22,11 +22,67 @@ class ViewBubble{
         // Child functionality
         this.anchoredTo = [];
         this.initialAnglePos = 0;
+
+        //image
+        this.resetImage();
     }
 
     static constructBubble(bubble){
         this.bubble = bubble;
         return this;
+    }
+
+    getImageFromPath(){
+        let img = (BubbleController.getInstance().getImages()[this.data.imageUrl].image);
+        if (img != null){
+            return img;
+        }
+    
+    }
+
+    resetImage(){
+        let tinkerImage = this.getImageFromPath();
+        console.log(tinkerImage);
+
+        if (tinkerImage == null) {
+            return;
+        }
+
+        imageMode(CORNER);
+        // length = this.radius;
+        length = 100;
+        let newHeight = tinkerImage.height;
+        let newWidth = tinkerImage.width;
+    
+        //if height is smaller
+        if (tinkerImage.height < tinkerImage.width){
+            newHeight = length;
+            newWidth = (tinkerImage.width / tinkerImage.height) * length;
+        } else {
+            newWidth = length;
+            newHeight = (tinkerImage.height / tinkerImage.width) * length;
+        }
+        tinkerImage.resize(newWidth, newHeight);
+    
+        let widthStartPoint = (newWidth / 2) - (length / 2);
+        let heightStartPoint = (newHeight / 2) - (length / 2);
+    
+        let newImage = createImage(length, length);
+        newImage.loadPixels();
+        for (let x = 0; x < newImage.width; x++) {
+            for (let y = 0; y < newImage.height; y++) {    
+                newImage.set(x, y, tinkerImage.get(widthStartPoint + x, heightStartPoint + y));
+            }
+        }
+        newImage.updatePixels();
+    
+        maskShape = createGraphics(length, length);
+        maskShape.circle(length/2, length/2, length);
+    
+        newImage.mask(this.maskShape);
+        tint(this.color);
+
+        this.image = newImage;  
     }
 
     addToAnchorList(vBubble){
@@ -126,6 +182,9 @@ class ViewBubble{
             fill(color(10, 10, 10, 0.1));
         }
 
+        if (this.image != null){
+            image(this.image, this.xPos, this.yPos);
+        }
         circle(this.xPos, this.yPos, this.radius);
     
         if (this.isActive){
@@ -134,7 +193,10 @@ class ViewBubble{
             fill(color(0, 0.4));
         }
         noStroke();
-        textAlign(CENTER);
+
+        textSize(12);
+        fill(255);
+        textAlign(CENTER, CENTER);  
         text(this.data.name, this.xPos, this.yPos);    
     }
 
