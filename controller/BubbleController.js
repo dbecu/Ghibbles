@@ -1,53 +1,31 @@
 class BubbleController{
-    static getAllViewBubbles(){
-        let db = new MyDatabase();    
-        return BubbleParser.parseToViewBubble(db.getBubbles());
-    }
-
-
-    static getAllBubbles(){
-        let db = new BubbleDatabase();    
-        let bubbleList = [];
-
-        for(let genreInstance of db.selectGenres()){
-            console.log(genreInstance);
-            let genreBubble = Parser.parse(genreInstance, BubbleType.Genre);
-
-            for(let subgenreInstance of db.selectSubgenres(genreBubble.id)){
-                let subgenreBubble = Parser.parse(subgenreInstance, BubbleType.Subgenre);
-
-                for(let movieInstance of db.selectMovies(subgenreBubble.id)){
-                    let movieBubble = Parser.parse(movieInstance, BubbleType.Movie);
+    #database;
     
-                    for(let characterInstance of db.selectCharacters(movieBubble.id)){
-                        let characterBubble = Parser.parse(characterInstance, BubbleType.Character);
-        
-                        for(let attributeInstance of db.selectCharacters(characterBubble.id)){
-                            let attributeBubble = Parser.parse(attributeInstance, BubbleType.Attribute);
-            
-                            characterBubble.addDirectChildren(attributeBubble)
-                            // bubbleList.push(attributeBubble);
-                        }
+    static #instance;
 
-                        movieBubble.addDirectChildren(characterBubble)
-                        // bubbleList.push(characterBubble);
-                    }
-
-                    subgenreBubble.addDirectChildren(movieBubble)
-                    // bubbleList.push(movieBubble);
-                }
-
-                genreBubble.addDirectChildren(subgenreBubble)
-                // bubbleList.push(subgenreBubble);
-            }
-
-            bubbleList.push(genreBubble);
-        }
-
-        console.log(bubbleList);
-        return bubbleList;
-
+    constructor(){
+        this.#database = new Database();
     }
 
+    async loadDb(){
+        await this.#database.loadAllTables();
+    }
+    
+    static getInstance(){
+        if (this.#instance == null) {
+            this.#instance = new BubbleController();
+        }
+        return this.#instance;
+    }
+
+    getAllBubbles(){
+        // return this.#bubbles;
+        return this.#database.getAllBubbles();
+    }
+
+    getImages(){
+        let images = this.#database.getImages();
+        return images;
+    }
 
 }
