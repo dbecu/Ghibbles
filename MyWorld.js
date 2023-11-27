@@ -25,15 +25,9 @@ function preload() {
     createCanvas(windowWidth, windowHeight);
     this.controller = BubbleController.getInstance();
     //Creating mask
-    this.img = loadImage("./data/img/howl.png");
-
-    console.log(controller);
-    console.log("??");
-
+    // this.img = loadImage("./data/img/howl.png");
 }
 function setup() {
-
-
     resizeCanvas(windowWidth, windowHeight);
     colorMode(HSB, 360, 100, 100);
     ellipseMode(RADIUS);
@@ -55,11 +49,13 @@ function setup() {
         viewBubbles.push(bub);
     }
 
+    console.log(viewBubbles);
+
     // console.log(viewBubbles[0].image);
     // console.log(this.editImg);
     // image(viewBubbles[0].image, 0, 0);
     // image(viewBubbles[0].getImageFromPath(), 100, 100);
-    image(this.img, 0, 0); 
+    // image(this.img, 0, 0); 
 
     
 }
@@ -102,7 +98,7 @@ function setupImage(){
     image(this.editImg, 0, 0); 
 }
 
-function dkraw(){
+function draw(){
     background(0, 0, 100);
 
     //Test
@@ -116,7 +112,7 @@ function dkraw(){
     textSize(16);
     fill(0);
     textAlign(LEFT, TOP);  
-    text(frameRate(), 10, 10);
+    text(int(frameRate()), 10, 10);
 
     //Check collisions
     //Collision & Overlapping Rules

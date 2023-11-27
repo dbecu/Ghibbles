@@ -1,5 +1,5 @@
 class Bubble{
-    constructor(id, name, color, imageUrl, type){
+    constructor(id, name, color, imageUrl, type, image = null){
         this.id = id;
         this.name = name;
         this.imageUrl = imageUrl;

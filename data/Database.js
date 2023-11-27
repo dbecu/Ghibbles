@@ -4,6 +4,10 @@ class Database{
     #filePath = "./data/database/";
     
     constructor(){
+        this.#loadAll();
+    }
+
+    #loadAll(){
         this.#loadAllTables();
     }
 
@@ -21,19 +25,27 @@ class Database{
         return this.images;
     }
 
-    #loadAllTables(){
-        this.bubblesTable = this.#loadTableFormat("Bubbles");
-        this.genreTable = this.#loadTableFormat("Genre");
-        this.subgenreLinkTable = this.#loadTableFormat("subgenresLink");
-        this.moviesTable = this.#loadTableFormat("movies");
-        this.charactersTable = this.#loadTableFormat("Ghibbles Database - characters");
-        this.attributesTable = this.#loadTableFormat("Ghibbles Database - attributes");
+    async #loadAllTables(){
+        this.bubblesTable = await this.#loadTableFormat(0);
+        this.genreTable = await this.#loadTableFormat(771251356);
+        this.subgenreLinkTable = await this.#loadTableFormat(934185385);
+        this.moviesTable = await this.#loadTableFormat(42305774);
+        this.charactersTable = await this.#loadTableFormat(1034415048);
+        this.attributesTable = await this.#loadTableFormat(398643895);
     }
 
-    #loadTableFormat(name){
-        let path = `${this.#filePath}${name}.csv`;
-        let table = loadTable(path, "csv", "header");
+    #loadTableFormat(id){
+        let table = loadTable(this.#getOnlinePath(id), "csv", "header");
+        // return new Promise((resolve) => {
+        //     loadTable(path, "csv", "header", (table) => {
+        //       resolve(table);
+        //     });
+        //   });        
         return table;
+    }
+
+    #getOnlinePath(gid){
+        return `https://docs.google.com/spreadsheets/d/e/2PACX-1vREs9HN8pJOJIw3BenwHrVrBij3mDNCcPyL4DOpN4qdQHOvf7dx9qYROfhvwbyIrFLyPhL0iIfeFmLX/pub?gid=${gid}&single=true&output=csv`
     }
 
     getAllBubbles(){

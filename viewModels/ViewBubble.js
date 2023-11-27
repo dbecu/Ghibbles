@@ -24,7 +24,7 @@ class ViewBubble{
         this.initialAnglePos = 0;
 
         //image
-        this.resetImage();
+        // this.resetImage();
     }
 
     static constructBubble(bubble){
