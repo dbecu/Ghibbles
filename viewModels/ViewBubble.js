@@ -1,160 +1,55 @@
 class ViewBubble{
-    #xPos;
-    #yPos;
-    #anchoredTo;
-
-    constructor(bubble, radius, xPos = width/2, yPos = height/2){
-        this.data = bubble;
-        this.xPos = xPos;
-        this.yPos = yPos;
-        
-        this.radius = radius;
-        this.isActive = true;
+    constructor(bubble, mass, radius, x = null, y = null){
+        this.data = bubble;        
         this.color = bubble.color;
+
+        this.isActive = true;
         this.isHighlighted = false;   
-        
-        //xPos, yPos, damp, mass, springInput
-        this.springMovement = new SpringMovement(this.xPos, this.yPos, 0.6, 22.0, 0.1);
-        // this.springMovement = new SpringMovement(this.xPos, this.yPos, 0.95, 9.0, 0.1);
 
-        this.moving = false;
-
-        // Child functionality
         this.anchoredTo = [];
-        this.initialAnglePos = 0;
 
-        //image
-        // this.resetImage();
-    }
+        //test
+        this.c2World = new c2.World(new c2.Rect(0, 0, width, height));
+        this.c2World.addInteractionForce(new c2.Gravitation(0.5));
 
-    static constructBubble(bubble){
-        this.bubble = bubble;
-        return this;
-    }
-
-    getImageFromPath(){
-        let img = (BubbleController.getInstance().getImages()[this.data.imageUrl].image);
-        if (img != null){
-            return img;
-        }
-    
-    }
-
-    resetImage(){
-        let tinkerImage = this.getImageFromPath();
-        console.log(tinkerImage);
-
-        if (tinkerImage == null) {
-            return;
-        }
-
-        imageMode(CORNER);
-        // length = this.radius;
-        length = 100;
-        let newHeight = tinkerImage.height;
-        let newWidth = tinkerImage.width;
-    
-        //if height is smaller
-        if (tinkerImage.height < tinkerImage.width){
-            newHeight = length;
-            newWidth = (tinkerImage.width / tinkerImage.height) * length;
-        } else {
-            newWidth = length;
-            newHeight = (tinkerImage.height / tinkerImage.width) * length;
-        }
-        tinkerImage.resize(newWidth, newHeight);
-    
-        let widthStartPoint = (newWidth / 2) - (length / 2);
-        let heightStartPoint = (newHeight / 2) - (length / 2);
-    
-        let newImage = createImage(length, length);
-        newImage.loadPixels();
-        for (let x = 0; x < newImage.width; x++) {
-            for (let y = 0; y < newImage.height; y++) {    
-                newImage.set(x, y, tinkerImage.get(widthStartPoint + x, heightStartPoint + y));
-            }
-        }
-        newImage.updatePixels();
-    
-        maskShape = createGraphics(length, length);
-        maskShape.circle(length/2, length/2, length);
-    
-        newImage.mask(this.maskShape);
-        tint(this.color);
-
-        this.image = newImage;  
-    }
-
-    addToAnchorList(vBubble){
-        this.anchoredTo.push(vBubble);
-
-    }
-
-    setNewPosition(x, y){
-        if (!this.moving){
-            this.moving = true;
-
-            x = constrain(x, this.radius, width - this.radius);
-            y = constrain(y, this.radius, height - this.radius);
-
-            this.springMovement.changeAnchorPos(x, y);
-            this.xPos = x;
-            this.yPos = y;
-        }
-    }
-
-    getPosition(){
-        return createVector(this.xPos, this.yPos);
+        if (x == null)  x = random(radius, width - radius);
+        if (y == null) y = random(radius, width - radius);
+        let p = new c2.Particle(x, y);
+        p.mass = mass;
+        p.radius = radius;
+        this.c2World.addParticle(p);
     }
 
     update(){
-        let buffer = 10;
+        this.c2World.update();
 
-        if (this.anchoredTo.length >= 1){
-            let vBubble = this.anchoredTo[0];
-            let v = p5.Vector.sub(createVector(vBubble.xPos, vBubble.yPos), createVector(this.xPos, this.yPos));
+        if (this.anchoredTo.length == 1) {
+            let p = this.anchoredTo[0].c2World.particles[0].position;
+            this.newPoint(p.x, p.y);
+        }
 
-            if (v.mag() > vBubble.radius + this.radius + buffer) {
-                v.normalize();
-                let maxDistance = vBubble.radius + this.radius;
-                if (!vBubble.isActive) { maxDistance += buffer; }
+        if (this.anchoredTo.length > 1) {
+            let x = 0;
+            let y = 0;
 
-                let newX = vBubble.xPos - random(v.x * maxDistance);
-                let newY = vBubble.yPos - random(v.y * maxDistance);
-    
-                if (this.anchoredTo.length > 1){
-                    let centralPos = this.#middlePosOfAllAnchors();
-                    this.setNewPosition(centralPos.x, centralPos.y);
-
-                }
-                else {
-                    this.setNewPosition(newX, newY);
-                }
+            for(let a of this.anchoredTo){
+                x += a.c2World.particles[0].position.x;
+                y += a.c2World.particles[0].position.y;
             }
-        }
 
-        let springPos = this.springMovement.updatePosition();
-        this.xPos = springPos.x;
-        this.yPos = springPos.y;
+            x = x / this.anchoredTo.length;
+            y = y / this.anchoredTo.length;
 
-        // How close factor
-        if (abs(this.springMovement.xPos - this.xPos) < buffer 
-            && abs(this.springMovement.yPos - this.yPos) < buffer){
-            this.moving = false;
+            this.newPoint(x, y);
         }
-        
     } 
 
-    #middlePosOfAllAnchors(){
-        let sumX = 0;
-        let sumY = 0;
-      
-        for(let a of this.anchoredTo){
-            sumX += a.xPos;
-            sumY  += a.yPos;
-        }
-
-        return createVector(sumX/this.anchoredTo.length, sumY/this.anchoredTo.length);
+    newPoint(x, y){
+        this.c2World.removeForce(this.c2World.currentPoint);
+         
+        let point = new c2.PointField(new c2.Point(x, y), 1);
+        this.c2World.currentPoint = point;
+        this.c2World.addForce(point);
     }
 
     display(){
@@ -162,60 +57,60 @@ class ViewBubble{
         this.#displayBubble();
     }
 
+    #displayRelation(){
+        let weight = 1;
+        switch(this.data.type){
+            case BubbleType.Subgenre:
+                weight = 4;
+                break;
+            case BubbleType.Movie:
+                weight = 3;
+                break;
+            case BubbleType.Character:
+                weight = 2;
+                break;
+            case BubbleType.Attribute:
+                weight = 1;
+                break;
+        }
+
+        if (this.isHighlighted){
+            stroke(color(50, weight * 10, 90, 1)); //HSB
+            strokeWeight(weight * 2);
+        } else {
+            stroke(color(200, 60, 50, 0.1));
+            strokeWeight(weight / 2);
+        }
+
+        for(let a of this.anchoredTo){
+            let parentPos = a.c2World.particles[0].position;
+            let childPos = this.c2World.particles[0].position;
+            line(parentPos.x, parentPos.y, childPos.x, childPos.y);
+        }
+    }
+
+
     #displayBubble(){
-        //The bubble
-        noFill();
-        
+        let p = this.c2World.particles[0];
+
         if (this.isHighlighted) {
             strokeWeight(4);
-            stroke(color(90, 100, 100, 1));
+            stroke(color(50, 100, 100, 1)); 
         } else {
             strokeWeight(1);
             stroke(color(0, 1));
         }
 
-
         if (this.isActive){
-            // fill(color(50, 100, 100, 0.6));
             fill(this.color);
         }else {
             fill(color(10, 10, 10, 0.1));
         }
 
-        if (this.image != null){
-            image(this.image, this.xPos, this.yPos);
-        }
-        circle(this.xPos, this.yPos, this.radius);
-    
-        if (this.isActive){
-            fill(color(0));
-        }else {
-            fill(color(0, 0.4));
-        }
-        noStroke();
-
-        textSize(12);
-        fill(255);
+        circle(p.position.x, p.position.y, p.radius - p.radius/10);
         textAlign(CENTER, CENTER);  
-        text(this.data.name, this.xPos, this.yPos);    
-    }
+        text(this.data.name, p.position.x, p.position.y);    
 
-    #displayRelation(){
-        if (this.isHighlighted){
-            stroke(color(100, 90, 90, 1)); //HSB
-            strokeWeight(4);
-        } else {
-            stroke(color(200, 60, 50, 0.4));
-            strokeWeight(2);
-        }
-
-        for(let a of this.anchoredTo){
-            line(this.xPos, this.yPos, a.xPos, a.yPos);
-        }
-    }
-
-    #displayAnchorChanges(vBubble){
-        
     }
 
 }

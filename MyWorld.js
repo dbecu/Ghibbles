@@ -126,38 +126,36 @@ function draw(){
                 createVector(otherBubble.xPos, otherBubble.yPos), 
                 createVector(bubble.xPos, bubble.yPos));
 
-            if (bubble.radius + otherBubble.radius >= direction.mag()){
+            let bubblesInCollision = bubble.radius + otherBubble.radius >= direction.mag();
+            bubble.inCollision = bubblesInCollision;
+            otherBubble.inCollision = bubblesInCollision;
 
-            let sameBubble = otherBubble != bubble;
-            let sameType = otherBubble.data.type == bubble.data.type;
-            let bothActive = otherBubble.isActive && bubble.isActive;
-            let inactiveParent = (otherBubble.isActive && bubble.anchoredTo.includes(otherBubble))
-                || (bubble.isActive && otherBubble.anchoredTo.includes(bubble));
+            if (bubblesInCollision) {
 
-            if (sameBubble && (sameType || bothActive || inactiveParent)) {
-                direction.normalize();
+                let sameBubble = otherBubble != bubble;
+                let sameType = otherBubble.data.type == bubble.data.type;
+                let bothActive = otherBubble.isActive && bubble.isActive;
+                let inactiveParent = (otherBubble.isActive && bubble.anchoredTo.includes(otherBubble))
+                    || (bubble.isActive && otherBubble.anchoredTo.includes(bubble));
 
-                let xDelta = direction.x * (bubble.radius + otherBubble.radius);
-                let yDelta = direction.y * (bubble.radius + otherBubble.radius);
-                
-                bubble.setNewPosition(bubble.xPos - xDelta, bubble.yPos - yDelta);
-                // otherBubble.setNewPosition(bubble.xPos - -xDelta, bubble.yPos - -yDelta);
+                if (sameBubble && (sameType || bothActive || inactiveParent)) {
+                    direction.normalize();
+
+                    bubble.lerpToNewDirection(degrees(direction.rotate(PI).heading()));
+                    otherBubble.lerpToNewDirection(degrees(direction.rotate(PI).heading()));
+
+                    bubble.setNewSpeed((bubble.speed + otherBubble.speed)/2);
+                    otherBubble.setNewSpeed((bubble.speed + otherBubble.speed)/2);
+
+                    if (bubble.data.id == 21) {
+                        console.log(`${bubble.data.name} ${otherBubble.data.name} `);
+                    }
                 }
             }
         }
 
         update(bubble);
         display(bubble);
-    }
-
-    for(let bubble of viewBubbles.filter(bub => bub.data.type == BubbleType.Genre)){
-        if (random(100) < 0.1) {
-            let randomIndex = 40;
-
-            let newX = bubble.xPos += random(-randomIndex, randomIndex);
-            let newY = bubble.yPos += random(-randomIndex, randomIndex);
-            bubble.setNewPosition(newX, newY);
-        }
     }
 }
 
