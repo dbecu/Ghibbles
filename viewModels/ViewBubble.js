@@ -17,23 +17,7 @@ class ViewBubble{
         let p = new c2.Particle(x, y);
         p.mass = mass;
         p.radius = radius;
-        this.c2World.addParticle(p);
-
-        //Image
-        // push();
-        shape.ellipse(width/2, height/2, width, height);
-        this.isCropped = false;
-        // this.data.image.mask(shape);
-        // this.croppedImage = this.data.image;
-    }
-
-    getCroppedImage(){
-        if (!this.isCropped) {
-            this.data.image.mask(shape);
-            this.isCropped = true;
-        }
-
-        return this.data.image;
+        this.c2World.addParticle(p);      
     }
 
     update(){
@@ -143,16 +127,7 @@ class ViewBubble{
         }
 
         let size = p.radius - p.radius/10;
-        // this.data.image.mask(shape);
-        image(this.getCroppedImage(), p.position.x - size, p.position.y - size, size * 2, size * 2)
-        // image(this.data.image, p.position.x - size, p.position.y - size, size * 2, size * 2)
-
-        // tint(color(50, 50, 50));
-        // shape.ellipse(width/2, height/2, width, height);
-        // let c = this.data.image.get();
-        // c.mask(shape);
-        // image(c, width / 2, height / 2, size, size);   
-        // image(this.data.getCroppedImage(), p.position.x - size, p.position.y - size, size, size);         
+        image(this.data.image, p.position.x - size, p.position.y - size, size * 2, size * 2)
 
         //The inner color / white
         fill(0, 0, 100, 0.5);

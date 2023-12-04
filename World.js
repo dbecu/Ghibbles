@@ -122,9 +122,9 @@ function popBubble(vBubble){
         let childBubble = new ViewBubble(
             bubblesToPop[i], 
             parentParticle.mass * 0.5, 
-            parentParticle.radius * 0.8); //,
-            // parentParticle.position.x,
-            // parentParticle.position.y);
+            parentParticle.radius * 0.8,
+            parentParticle.position.x + random(-10, 10),
+            parentParticle.position.y + random(-10, 10));
         vBubble.c2World.addParticle(childBubble.c2World.particles[0]); //Add particle to parent
         completeWorld.addParticle(childBubble.c2World.particles[0]); //Add particle to complete world
         
