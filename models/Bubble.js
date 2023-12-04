@@ -21,4 +21,16 @@ class Bubble{
     addDirectChild(bubbles){
         this.directChildren.push(bubbles);
     }
+
+    getCroppedImage(){
+        if (this.croppedImage == null){
+            shape.ellipse(width/2, height/2, width, height);
+            this.croppedImage = this.image.get();
+            // this.croppedImage.mask(shape);
+            // console.log(this.image);
+
+        }   
+
+        return this.image;
+    }
 }
