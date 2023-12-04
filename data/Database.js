@@ -7,17 +7,27 @@ class Database{
         this.#loadAll();
     }
 
-    #loadAll(){
-        this.#loadAllTables();
+    async #loadAll(){
+        await this.#loadAllTables();
+        
+        this.loadImages();
+        controllerReady = true;
     }
 
     getImages(){
+        return this.images;
+    }
+
+    loadImages(){
         this.images = {};
 
+        console.log(this.bubblesTable);
         for (var g = 0; g < this.bubblesTable.getRowCount(); g++){
 
             let path = `${this.#imagePath}${this.bubblesTable.getRow(g).get(2)}`;
+            // let path = `${this.#imagePath}spirit.png`;
             // console.log("loadImage(path)");
+            console.log(path);
             // console.log(loadImage(path));
             this.images[this.bubblesTable.getRow(g).get(2)] = { image: loadImage(path) };
         }
@@ -26,22 +36,30 @@ class Database{
     }
 
     async #loadAllTables(){
-        this.bubblesTable = await this.#loadTableFormat(0);
+        this.bubblesTable = await this.#loadTableFormat(0, true);
         this.genreTable = await this.#loadTableFormat(771251356);
         this.subgenreLinkTable = await this.#loadTableFormat(934185385);
         this.moviesTable = await this.#loadTableFormat(42305774);
         this.charactersTable = await this.#loadTableFormat(1034415048);
         this.attributesTable = await this.#loadTableFormat(398643895);
+
+        console.log("ok??");
     }
 
-    #loadTableFormat(id){
-        let table = loadTable(this.#getOnlinePath(id), "csv", "header");
-        // return new Promise((resolve) => {
-        //     loadTable(path, "csv", "header", (table) => {
-        //       resolve(table);
-        //     });
-        //   });        
-        return table;
+    async #loadTableFormat(id, check = false){
+        // let table = await loadTable(this.#getOnlinePath(id), "csv", "header");
+        // setTimeout(resolve, 1000);
+
+        // if (table) {
+        //     let imgFilename = table.getString(0, 0);
+        // }
+        // return table;
+
+        return new Promise((resolve) => {
+            loadTable(this.#getOnlinePath(id), "csv", "header", (table) => {
+              resolve(table);
+            });
+        });        
     }
 
     #getOnlinePath(gid){
@@ -51,17 +69,21 @@ class Database{
     getAllBubbles(){
         this.allBubbles = [];
         let table = this.bubblesTable;
+        console.log(this.bubblesTable);
 
         //Getting all the bubbles
         for (var g = 0; g < table.getRowCount(); g++){
             //0 name, 1 color, 2 imagePath, 3 id
             //id, name, color, imageUrl, type
-            this.allBubbles.push(new Bubble(
+            let bub = new Bubble(
                 parseInt(table.getRow(g).get(3)),
                 table.getRow(g).get(0),
                 table.getRow(g).get(1),
                 table.getRow(g).get(2)
-            ))
+            );
+
+            bub.image = this.images[bub.imageUrl].image;
+            this.allBubbles.push(bub);
         }  
 
         let genres = this.#select(BubbleType.Genre, this.genreTable);
