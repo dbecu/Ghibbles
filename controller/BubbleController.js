@@ -6,10 +6,6 @@ class BubbleController{
     constructor(){
         this.#database = new Database();
     }
-
-    async loadDb(){
-        await this.#database.loadAllTables();
-    }
     
     static getInstance(){
         if (this.#instance == null) {

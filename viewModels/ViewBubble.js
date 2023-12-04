@@ -10,7 +10,7 @@ class ViewBubble{
 
         //test
         this.c2World = new c2.World(new c2.Rect(0, 0, width, height));
-        this.c2World.addInteractionForce(new c2.Gravitation(0.5));
+                this.c2World.addInteractionForce(new c2.Gravitation(0.5));
 
         if (x == null)  x = random(radius, width - radius);
         if (y == null) y = random(radius, width - radius);
@@ -18,15 +18,50 @@ class ViewBubble{
         p.mass = mass;
         p.radius = radius;
         this.c2World.addParticle(p);
+
+        //Image
+        // push();
+        shape.ellipse(width/2, height/2, width, height);
+        this.isCropped = false;
+        // this.data.image.mask(shape);
+        // this.croppedImage = this.data.image;
+    }
+
+    getCroppedImage(){
+        if (!this.isCropped) {
+            this.data.image.mask(shape);
+            this.isCropped = true;
+        }
+
+        return this.data.image;
     }
 
     update(){
         this.c2World.update();
-
+        
         if (this.anchoredTo.length == 1) {
             let p = this.anchoredTo[0].c2World.particles[0].position;
             this.newPoint(p.x, p.y);
         }
+        
+        if (this.anchoredTo.length >= 1){
+
+            // If the middle parts are bigger than their combined radius
+            if (dist(
+                this.anchoredTo[0].c2World.particles[0].position.x, 
+                this.anchoredTo[0].c2World.particles[0].position.y,
+                this.c2World.particles[0].position.x, 
+                this.c2World.particles[0].position.y) >= this.anchoredTo[0].c2World.particles[0].radius + this.anchoredTo[0].c2World.particles[0].radius + 200) {
+                    this.newPoint(this.anchoredTo[0].c2World.particles[0].position.x, this.anchoredTo[0].c2World.particles[0].position.y);
+                    // console.log(`${this.data.name} HIGH`);
+                } else {
+                    // console.log(`${this.data.name} LOW`);
+                    this.c2World.removeForce(this.anchoredTo[0].c2World.currentPoint);
+
+                }
+        }
+
+ 
 
         if (this.anchoredTo.length > 1) {
             let x = 0;
@@ -45,7 +80,7 @@ class ViewBubble{
     } 
 
     newPoint(x, y){
-        this.c2World.removeForce(this.c2World.currentPoint);
+        if (this.c2World.currentPoint != null) this.c2World.removeForce(this.c2World.currentPoint);
          
         let point = new c2.PointField(new c2.Point(x, y), 1);
         this.c2World.currentPoint = point;
@@ -107,7 +142,30 @@ class ViewBubble{
             fill(color(10, 10, 10, 0.1));
         }
 
-        circle(p.position.x, p.position.y, p.radius - p.radius/10);
+        let size = p.radius - p.radius/10;
+        // this.data.image.mask(shape);
+        image(this.getCroppedImage(), p.position.x - size, p.position.y - size, size * 2, size * 2)
+        // image(this.data.image, p.position.x - size, p.position.y - size, size * 2, size * 2)
+
+        // tint(color(50, 50, 50));
+        // shape.ellipse(width/2, height/2, width, height);
+        // let c = this.data.image.get();
+        // c.mask(shape);
+        // image(c, width / 2, height / 2, size, size);   
+        // image(this.data.getCroppedImage(), p.position.x - size, p.position.y - size, size, size);         
+
+        //The inner color / white
+        fill(0, 0, 100, 0.5);
+        noStroke();
+        circle(p.position.x, p.position.y, size - 4);
+
+        //The outline
+        noFill();
+        strokeWeight(0.5);
+        stroke(this.color);
+        circle(p.position.x, p.position.y, size);
+
+        fill(this.color);
         textAlign(CENTER, CENTER);  
         text(this.data.name, p.position.x, p.position.y);    
 
