@@ -74,7 +74,7 @@ class ViewBubble{
 
     display(){
         this.#displayBubble();
-        this.#displayRelation();
+        // this.#displayRelation();
     }
 
     #displayRelation(){
@@ -112,6 +112,9 @@ class ViewBubble{
 
 
     #displayBubble(){
+
+        push();
+
         let p = this.c2World.particles[0];
 
         let size = p.radius - p.radius/10;
@@ -136,8 +139,8 @@ class ViewBubble{
             textOutlineSize = 4;
 
         } else if(this.isChildHighlighted){
-            size *= 1.1;
-            innerOpacty = 0.3;
+            size *= 1.05;
+            innerOpacty = 0.4;
             outlineWeight = 2;
         } 
 
@@ -152,13 +155,13 @@ class ViewBubble{
             textColor.setAlpha(0.5);
         }
 
-
+        noStroke();
         if (this.isHighlighted){
             fill(color(0, 0, 100, 0.1));
             circle(p.position.x, p.position.y, size + 12);
         }
         // The image
-        image(this.data.image, p.position.x - size, p.position.y - size, size * 2, size * 2)
+        image(this.data.croppedImage, p.position.x - size, p.position.y - size, size * 2, size * 2)
             
         // The inner color / white
         innerColor.setAlpha(innerOpacty);
@@ -184,6 +187,7 @@ class ViewBubble{
         textAlign(CENTER, CENTER);  
         text(this.data.name, p.position.x, p.position.y);    
 
+        pop();
     }
 
 }

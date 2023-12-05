@@ -46,7 +46,7 @@ function start(){
     dataBubbles = this.controller.getAllBubbles();
     viewBubbles = [];
     for(let bubble of dataBubbles){
-        let radius = min(width, height) / 14;
+        let radius = min(width, height) / 10;
         let bub = new ViewBubble(bubble, 10, radius);
 
         completeWorld.addParticle(bub.c2World.particles[0]);
@@ -117,8 +117,9 @@ function bubbleInactiveChildren(vBubble){
 function popBubble(vBubble){
     //Finds which child bubble is already popped active from other parent bubble
     let amountToPopEachTime = 2;
-    let bubblesToPop = this.bubbleInactiveChildren(vBubble).slice(0, amountToPopEachTime);
-    if (bubblesToPop.length <= 2){
+    let allChildBubbles = this.bubbleInactiveChildren(vBubble);
+    let bubblesToPop = allChildBubbles.slice(0, amountToPopEachTime);
+    if (allChildBubbles.length <= amountToPopEachTime){
         vBubble.isActive = false;
     }
 
@@ -134,7 +135,7 @@ function popBubble(vBubble){
         vBubble.c2World.addParticle(childBubble.c2World.particles[0]); //Add particle to parent
         completeWorld.addParticle(childBubble.c2World.particles[0]); //Add particle to complete world
 
-        // childBubble.isActive = (childBubble.data.directChildren < 0);
+        childBubble.isActive = (childBubble.data.directChildren.length > 0);
         childBubble.anchoredTo.push(vBubble);
 
         viewBubbles.push(childBubble);
@@ -146,6 +147,7 @@ function popBubble(vBubble){
 
 //Incase bubbles overlap, ensure the top-most is hovered
 function hoverBubble(){
+    if (typeof viewBubbles === 'undefined') return;
     //Logic about hovering above a bubble
     let hoveredBubbles = [];
     for(let bubble of viewBubbles){
@@ -221,10 +223,18 @@ function draw() {
 
     showRelations(hovBub);
 
+    // Frame rate
+    noStroke();
     textSize(16);
-    fill(0);
+    fill(color(100, 0.4));
     textAlign(LEFT, TOP);  
     text(int(frameRate()), 10, 10);
+
+    textSize(16);
+    fill(color(100, 0.4));
+    textAlign(LEFT, BOTTOM);  
+    text("LEFT CLICK: POP, RIGHT CLICK: UNPOP", 10, height-10);
+
 }
 
 function mousePressed(){
@@ -260,7 +270,7 @@ function mousePressed(){
     }
 }
 
-function getChild(checkBubbles, showRelations = false){
+function getChild(checkBubbles, index){
     let bubs = [];
 
     //Check through list that was given
@@ -271,19 +281,22 @@ function getChild(checkBubbles, showRelations = false){
             for (let anchor of bub.anchoredTo){
                 if (checkBub.data.id == anchor.data.id){
 
-                    stroke(checkBub.data.color);
-                    strokeWeight(10);
+                    let tempColor = color(hue(checkBub.data.color), saturation(checkBub.data.color), brightness(checkBub.data.color) - 20);
+                    tempColor.setAlpha(1 - constrain((index * 0.2), 0.1, 1));
+                    stroke(tempColor);
+                    // strokeWeight(getBubbleTypeNum(anchor.data.type / 2, true));
+                    strokeWeight(constrain(6 - index * 1.5, 0.5, 10));
                     // strokeWeight(getBubbleTypeNum(checkBub.data.type, true));
                     line(
-                        checkBub.c2World.particles[0].position.x, 
-                        checkBub.c2World.particles[0].position.y, 
+                        bub.c2World.particles[0].position.x, 
+                        bub.c2World.particles[0].position.y, 
                         anchor.c2World.particles[0].position.x, 
                         anchor.c2World.particles[0].position.y);
                     
 
                     bubs.push(bub);
 
-                    for(let cBub of getChild([bub])){
+                    for(let cBub of getChild([bub], index + 1)){
                         bubs.push(cBub);
                     }
 
@@ -295,16 +308,18 @@ function getChild(checkBubbles, showRelations = false){
     return bubs;
 }
 
-function getParent(checkBubbles, showRelations = false) {
+function getParent(checkBubbles, index) {
     let bubs = [];
 
     //Check through list that was given
     for(let checkBub of checkBubbles){
         for (let a of checkBub.anchoredTo){
 
-            //line
-            stroke(checkBub.data.color);
-            strokeWeight(getBubbleTypeNum(a.data.type, true));
+            let tempColor = color(hue(checkBub.data.color), saturation(checkBub.data.color), brightness(checkBub.data.color) + 20);
+            tempColor.setAlpha(1 - constrain((index * 0.2), 0.1, 1));
+            stroke(tempColor);
+            // strokeWeight(getBubbleTypeNum(a.data.type / 2, true));
+            strokeWeight(constrain(6 - index * 1.5, 0.5, 10));
             line(
                 checkBub.c2World.particles[0].position.x, 
                 checkBub.c2World.particles[0].position.y, 
@@ -314,7 +329,7 @@ function getParent(checkBubbles, showRelations = false) {
             bubs.push(a);
         }
 
-        for (let a of getParent(checkBub.anchoredTo)){
+        for (let a of getParent(checkBub.anchoredTo, index + 1)){
             bubs.push(a);
         }
     }
@@ -325,8 +340,8 @@ function getParent(checkBubbles, showRelations = false) {
 function showRelations(bubble){
     if (bubble == null) return;
 
-    // getParent([bubble], true);
-    getChild([bubble], true);
+    getParent([bubble], 0);
+    getChild([bubble], 0);
 }
 
 function getBubbleTypeNum(type, reverse = false){
