@@ -5,6 +5,7 @@ class ViewBubble{
 
         this.isActive = true;
         this.isHighlighted = false;   
+        this.isChildHighlighted = false;
 
         this.anchoredTo = [];
 
@@ -17,23 +18,7 @@ class ViewBubble{
         let p = new c2.Particle(x, y);
         p.mass = mass;
         p.radius = radius;
-        this.c2World.addParticle(p);
-
-        //Image
-        // push();
-        shape.ellipse(width/2, height/2, width, height);
-        this.isCropped = false;
-        // this.data.image.mask(shape);
-        // this.croppedImage = this.data.image;
-    }
-
-    getCroppedImage(){
-        if (!this.isCropped) {
-            this.data.image.mask(shape);
-            this.isCropped = true;
-        }
-
-        return this.data.image;
+        this.c2World.addParticle(p);      
     }
 
     update(){
@@ -88,8 +73,8 @@ class ViewBubble{
     }
 
     display(){
-        this.#displayRelation();
         this.#displayBubble();
+        // this.#displayRelation();
     }
 
     #displayRelation(){
@@ -120,55 +105,89 @@ class ViewBubble{
         for(let a of this.anchoredTo){
             let parentPos = a.c2World.particles[0].position;
             let childPos = this.c2World.particles[0].position;
+            fill(color(0));
             line(parentPos.x, parentPos.y, childPos.x, childPos.y);
         }
     }
 
 
     #displayBubble(){
+
+        push();
+
         let p = this.c2World.particles[0];
 
-        if (this.isHighlighted) {
-            strokeWeight(4);
-            stroke(color(50, 100, 100, 1)); 
-        } else {
-            strokeWeight(1);
-            stroke(color(0, 1));
-        }
-
-        if (this.isActive){
-            fill(this.color);
-        }else {
-            fill(color(10, 10, 10, 0.1));
-        }
-
         let size = p.radius - p.radius/10;
-        // this.data.image.mask(shape);
-        image(this.getCroppedImage(), p.position.x - size, p.position.y - size, size * 2, size * 2)
-        // image(this.data.image, p.position.x - size, p.position.y - size, size * 2, size * 2)
 
-        // tint(color(50, 50, 50));
-        // shape.ellipse(width/2, height/2, width, height);
-        // let c = this.data.image.get();
-        // c.mask(shape);
-        // image(c, width / 2, height / 2, size, size);   
-        // image(this.data.getCroppedImage(), p.position.x - size, p.position.y - size, size, size);         
+        let innerOpacty = 0.5;
+        let innerSize = size;
+        let innerColor = color(0, 0, 100);
 
-        //The inner color / white
-        fill(0, 0, 100, 0.5);
+        let outlineWeight = 1;
+        let outlineSize = size;
+
+        let textColor = color(0, 0, 0);
+        let textOutlineSize = null;
+        let textSize = size / 10;
+
+        if (this.isHighlighted){
+            size *= 1.2;
+            innerOpacty = 0.1;
+            outlineWeight = 4;
+
+            textColor = color(0, 0, 100);
+            textOutlineSize = 4;
+
+        } else if(this.isChildHighlighted){
+            size *= 1.05;
+            innerOpacty = 0.4;
+            outlineWeight = 2;
+        } 
+
+        outlineSize = size + outlineWeight/2
+        innerSize = size - 4;
+
+        if (!this.isActive){
+            innerOpacty = 0.6;
+            innerSize = size - 2;
+            innerColor = color(0, 0, 0);
+            textColor = color(0, 0, 100);
+            textColor.setAlpha(0.5);
+        }
+
         noStroke();
-        circle(p.position.x, p.position.y, size - 4);
+        if (this.isHighlighted){
+            fill(color(0, 0, 100, 0.1));
+            circle(p.position.x, p.position.y, size + 12);
+        }
+        // The image
+        image(this.data.croppedImage, p.position.x - size, p.position.y - size, size * 2, size * 2)
+            
+        // The inner color / white
+        innerColor.setAlpha(innerOpacty);
+        fill(innerColor);
+        noStroke();
+        circle(p.position.x, p.position.y, innerSize);
 
         //The outline
         noFill();
-        strokeWeight(0.5);
+        strokeWeight(outlineWeight);
         stroke(this.color);
-        circle(p.position.x, p.position.y, size);
+        circle(p.position.x, p.position.y, outlineSize);
 
-        fill(this.color);
+        //The text
+        noStroke();
+        if (textOutlineSize){
+            strokeWeight(textOutlineSize);
+            stroke(this.color);
+        }
+        fill(textColor);
+
+        // textSize(12);
         textAlign(CENTER, CENTER);  
         text(this.data.name, p.position.x, p.position.y);    
 
+        pop();
     }
 
 }

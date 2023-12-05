@@ -1,6 +1,7 @@
 class Database{
 
-    #imagePath = "./data/img/";
+    #imagePath = "./data/img/og/";
+    #croppedImagePath = "./data/img/circle/";
     #filePath = "./data/database/";
     
     constructor(){
@@ -10,7 +11,7 @@ class Database{
     async #loadAll(){
         await this.#loadAllTables();
         
-        this.loadImages();
+        await this.loadImages();
         controllerReady = true;
     }
 
@@ -18,18 +19,23 @@ class Database{
         return this.images;
     }
 
-    loadImages(){
+    async loadImages(){
         this.images = {};
+        this.croppedImages = {};
 
         console.log(this.bubblesTable);
         for (var g = 0; g < this.bubblesTable.getRowCount(); g++){
 
-            let path = `${this.#imagePath}${this.bubblesTable.getRow(g).get(2)}`;
-            // let path = `${this.#imagePath}spirit.png`;
-            // console.log("loadImage(path)");
-            console.log(path);
-            // console.log(loadImage(path));
-            this.images[this.bubblesTable.getRow(g).get(2)] = { image: loadImage(path) };
+            let filename = this.bubblesTable.getRow(g).get(2);
+            let ogImagePath = `${this.#imagePath}${filename}`;
+            this.images[filename] = { image: loadImage(ogImagePath) };
+
+            let filenameWithoutExt = filename.substring(0, filename.length - 4);
+            let circleImagePath = `${this.#croppedImagePath}${filenameWithoutExt}-circle.png`;
+            this.croppedImages[filename] = { image: loadImage(circleImagePath) };
+            
+
+
         }
 
         return this.images;
@@ -47,14 +53,6 @@ class Database{
     }
 
     async #loadTableFormat(id, check = false){
-        // let table = await loadTable(this.#getOnlinePath(id), "csv", "header");
-        // setTimeout(resolve, 1000);
-
-        // if (table) {
-        //     let imgFilename = table.getString(0, 0);
-        // }
-        // return table;
-
         return new Promise((resolve) => {
             loadTable(this.#getOnlinePath(id), "csv", "header", (table) => {
               resolve(table);
@@ -83,6 +81,8 @@ class Database{
             );
 
             bub.image = this.images[bub.imageUrl].image;
+            bub.croppedImage = this.croppedImages[bub.imageUrl].image;
+
             this.allBubbles.push(bub);
         }  
 

@@ -8,12 +8,15 @@ let started = false;
 let backgroundImage;
 
 function preload() {
-    createCanvas(windowWidth, windowHeight);
+    // createCanvas(windowWidth, windowHeight);
+
+    // text("LOADING",windowWidth/2, windowHeight/2);
+
     shape = createGraphics(windowWidth, windowHeight);
 
     this.controller = BubbleController.getInstance();
 
-    this.img = loadImage("./data/img/howl.png");
+    this.img = loadImage("./data/img/wallpaper.jpeg");
 }
 
 function setup() {
@@ -43,7 +46,7 @@ function start(){
     dataBubbles = this.controller.getAllBubbles();
     viewBubbles = [];
     for(let bubble of dataBubbles){
-        let radius = min(width, height) / 14;
+        let radius = min(width, height) / 10;
         let bub = new ViewBubble(bubble, 10, radius);
 
         completeWorld.addParticle(bub.c2World.particles[0]);
@@ -114,7 +117,11 @@ function bubbleInactiveChildren(vBubble){
 function popBubble(vBubble){
     //Finds which child bubble is already popped active from other parent bubble
     let amountToPopEachTime = 2;
-    let bubblesToPop = this.bubbleInactiveChildren(vBubble).slice(0, amountToPopEachTime);
+    let allChildBubbles = this.bubbleInactiveChildren(vBubble);
+    let bubblesToPop = allChildBubbles.slice(0, amountToPopEachTime);
+    if (allChildBubbles.length <= amountToPopEachTime){
+        vBubble.isActive = false;
+    }
 
     for (let i = 0; i < bubblesToPop.length; i++) {
         let parentParticle = vBubble.c2World.particles[0];
@@ -122,13 +129,15 @@ function popBubble(vBubble){
         let childBubble = new ViewBubble(
             bubblesToPop[i], 
             parentParticle.mass * 0.5, 
-            parentParticle.radius * 0.8); //,
-            // parentParticle.position.x,
-            // parentParticle.position.y);
+            parentParticle.radius * 0.8,
+            parentParticle.position.x + random(-10, 10),
+            parentParticle.position.y + random(-10, 10));
         vBubble.c2World.addParticle(childBubble.c2World.particles[0]); //Add particle to parent
         completeWorld.addParticle(childBubble.c2World.particles[0]); //Add particle to complete world
-        
+
+        childBubble.isActive = (childBubble.data.directChildren.length > 0);
         childBubble.anchoredTo.push(vBubble);
+
         viewBubbles.push(childBubble);
     }
 
@@ -138,7 +147,8 @@ function popBubble(vBubble){
 
 //Incase bubbles overlap, ensure the top-most is hovered
 function hoverBubble(){
-    //Logic
+    if (typeof viewBubbles === 'undefined') return;
+    //Logic about hovering above a bubble
     let hoveredBubbles = [];
     for(let bubble of viewBubbles){
         let p = bubble.c2World.particles[0];
@@ -147,6 +157,7 @@ function hoverBubble(){
         }
 
         bubble.isHighlighted = false;
+        bubble.isChildHighlighted = false;
     }
 
     let chosenBubble = null;
@@ -161,8 +172,15 @@ function hoverBubble(){
         }
     }
 
+    //Design stuff
     if (chosenBubble != null) { 
         chosenBubble.isHighlighted = true; 
+        for (let c of this.getChild([chosenBubble])){
+            c.isChildHighlighted = true;
+        }
+        for (let p of this.getParent([chosenBubble])){
+            p.isChildHighlighted = true;
+        }
 
         if (chosenBubble.isHighlighted){
             console.log("!!!");
@@ -181,8 +199,7 @@ function draw() {
     if (!started) return;
 
     update();
-    hoverBubble();
-    background('#cccccc');
+    let hovBub = hoverBubble();
     
     push();
         imageMode(CENTER);
@@ -198,15 +215,26 @@ function draw() {
         image(this.backgroundImage, width / 2, height / 2, this.backgroundImage.width * multi, this.backgroundImage.height * multi);   
     pop();
 
+    background(color(0, 0, 0, 0.5));
 
     for(let bub of viewBubbles){
         bub.display();
     }
 
+    showRelations(hovBub);
+
+    // Frame rate
+    noStroke();
     textSize(16);
-    fill(0);
+    fill(color(100, 0.4));
     textAlign(LEFT, TOP);  
     text(int(frameRate()), 10, 10);
+
+    textSize(16);
+    fill(color(100, 0.4));
+    textAlign(LEFT, BOTTOM);  
+    text("LEFT CLICK: POP, RIGHT CLICK: UNPOP", 10, height-10);
+
 }
 
 function mousePressed(){
@@ -217,11 +245,11 @@ function mousePressed(){
         if (mouseButton === LEFT){
             if (toPop.data.directChildren.length > 0) { 
                 popBubble(toPop); 
+            } else {
+                toPop.isActive = false;
             }
 
-            if (toPop.anchoredTo.length > 0){
-                this.backgroundImage = toPop.anchoredTo[0].data.image;
-            }
+            this.backgroundImage = toPop.data.image;
         }
 
         if (mouseButton === RIGHT) {
@@ -236,11 +264,13 @@ function mousePressed(){
                 // Remove clicked one
                 viewBubbles.splice(viewBubbles.findIndex(x => x.data.id == toPop.data.id), 1);
             }
+
+            toPop.isActive = true;
         }
     }
 }
 
-function getChild(checkBubbles){
+function getChild(checkBubbles, index){
     let bubs = [];
 
     //Check through list that was given
@@ -250,9 +280,23 @@ function getChild(checkBubbles){
         for(let bub of viewBubbles){
             for (let anchor of bub.anchoredTo){
                 if (checkBub.data.id == anchor.data.id){
+
+                    let tempColor = color(hue(checkBub.data.color), saturation(checkBub.data.color), brightness(checkBub.data.color) - 20);
+                    tempColor.setAlpha(1 - constrain((index * 0.2), 0.1, 1));
+                    stroke(tempColor);
+                    // strokeWeight(getBubbleTypeNum(anchor.data.type / 2, true));
+                    strokeWeight(constrain(6 - index * 1.5, 0.5, 10));
+                    // strokeWeight(getBubbleTypeNum(checkBub.data.type, true));
+                    line(
+                        bub.c2World.particles[0].position.x, 
+                        bub.c2World.particles[0].position.y, 
+                        anchor.c2World.particles[0].position.x, 
+                        anchor.c2World.particles[0].position.y);
+                    
+
                     bubs.push(bub);
 
-                    for(let cBub of getChild([bub])){
+                    for(let cBub of getChild([bub], index + 1)){
                         bubs.push(cBub);
                     }
 
@@ -264,3 +308,63 @@ function getChild(checkBubbles){
     return bubs;
 }
 
+function getParent(checkBubbles, index) {
+    let bubs = [];
+
+    //Check through list that was given
+    for(let checkBub of checkBubbles){
+        for (let a of checkBub.anchoredTo){
+
+            let tempColor = color(hue(checkBub.data.color), saturation(checkBub.data.color), brightness(checkBub.data.color) + 20);
+            tempColor.setAlpha(1 - constrain((index * 0.2), 0.1, 1));
+            stroke(tempColor);
+            // strokeWeight(getBubbleTypeNum(a.data.type / 2, true));
+            strokeWeight(constrain(6 - index * 1.5, 0.5, 10));
+            line(
+                checkBub.c2World.particles[0].position.x, 
+                checkBub.c2World.particles[0].position.y, 
+                a.c2World.particles[0].position.x, 
+                a.c2World.particles[0].position.y)
+
+            bubs.push(a);
+        }
+
+        for (let a of getParent(checkBub.anchoredTo, index + 1)){
+            bubs.push(a);
+        }
+    }
+
+    return bubs;
+}
+
+function showRelations(bubble){
+    if (bubble == null) return;
+
+    getParent([bubble], 0);
+    getChild([bubble], 0);
+}
+
+function getBubbleTypeNum(type, reverse = false){
+    let num = 0;
+    switch(type){
+        case BubbleType.Genre:
+            num = 1;
+            break;
+        case BubbleType.Subgenre:
+            num = 2;
+            break;
+        case BubbleType.Movie:
+            num = 3;
+            break;
+        case BubbleType.Character:
+            num = 4;
+            break;
+        case BubbleType.Attribute:
+            num = 5;
+            break;
+    }
+
+    if (reverse) { num = 6 - num; }
+
+    return num;
+}
