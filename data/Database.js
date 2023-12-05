@@ -1,6 +1,7 @@
 class Database{
 
-    #imagePath = "./data/img/";
+    #imagePath = "./data/img/og/";
+    #croppedImagePath = "./data/img/circle/";
     #filePath = "./data/database/";
     
     constructor(){
@@ -10,7 +11,7 @@ class Database{
     async #loadAll(){
         await this.#loadAllTables();
         
-        this.loadImages();
+        await this.loadImages();
         controllerReady = true;
     }
 
@@ -18,29 +19,24 @@ class Database{
         return this.images;
     }
 
-    loadImages(){
+    async loadImages(){
         this.images = {};
         this.croppedImages = {};
 
         console.log(this.bubblesTable);
         for (var g = 0; g < this.bubblesTable.getRowCount(); g++){
 
-            let path = `${this.#imagePath}${this.bubblesTable.getRow(g).get(2)}`;
-            this.images[this.bubblesTable.getRow(g).get(2)] = { image: loadImage(path) };
+            let filename = this.bubblesTable.getRow(g).get(2);
+            let ogImagePath = `${this.#imagePath}${filename}`;
+            this.images[filename] = { image: loadImage(ogImagePath) };
+
+            let filenameWithoutExt = filename.substring(0, filename.length - 4);
+            let circleImagePath = `${this.#croppedImagePath}${filenameWithoutExt}-circle.png`;
+            this.croppedImages[filename] = { image: loadImage(circleImagePath) };
+            
+
+
         }
-
-        for (var g = 0; g < this.bubblesTable.getRowCount(); g++){
-
-            let path = `${this.#imagePath}${this.bubblesTable.getRow(g).get(2)}`;
-            let img = loadImage(path);
-            img.mask(shape);
-
-            this.croppedImages[this.bubblesTable.getRow(g).get(2)] = { image: img };
-        }
-
-        // this.img2 = createImage(this.data.image.width, this.data.image.height);
-        // this.img2.copy(this.data.image, 0, 0, this.data.image.width, this.data.image.height, 0, 0, this.img2.width, this.img2.height);
-
 
         return this.images;
     }
@@ -85,8 +81,8 @@ class Database{
             );
 
             bub.image = this.images[bub.imageUrl].image;
-            bub.croppedImage = this.croppedImage[bub.imageUrl].image;
-            
+            bub.croppedImage = this.croppedImages[bub.imageUrl].image;
+
             this.allBubbles.push(bub);
         }  
 
