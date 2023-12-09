@@ -10,6 +10,9 @@ let backgroundImage;
 let popsound;
 let antipopsound;
 
+let isTutorial = true;
+
+
 //TODO: bug, can remove genre bubble, have a reset button?
 //TODO: minor bug, link should be automatically added to bubbles
 
@@ -37,8 +40,33 @@ function setup() {
         element.addEventListener("contextmenu", (e) => e.preventDefault());
     }
 
+    isTutorial = true;
     setupReady = true;
     this.backgroundImage = this.img;
+}
+
+function tutorial(){
+    setBackgroundImage(this.backgroundImage);
+    let weight = 2;
+    this.tutrad = min(width, height) / 3.5;
+    let bubColour = color(0, 0, 100);
+    bubColour.setAlpha(0.6);
+
+    if (dist(mouseX, mouseY, width/2, height/2) < this.tutrad) {
+        this.tutrad += 10;
+        weight += 2;
+        bubColour.setAlpha(0.75);
+    }
+
+    strokeWeight(weight);
+    stroke(color(30, 100, 150));
+    fill(bubColour);
+    circle(width/2, height/2, this.tutrad);
+
+
+    textAlign(CENTER, CENTER);  
+    textSize(64);
+    text(`GHIBBLES \nClick me to start`, width/2, height/2);    
 }
 
 function start(){
@@ -63,7 +91,7 @@ function start(){
     }
 }
 
-function update(){    
+function update(){   
     completeWorld.update();
 
     for(let bub of viewBubbles){
@@ -213,22 +241,15 @@ function draw() {
 
     if (!started) return;
 
+    if (isTutorial){
+        tutorial();
+        return;
+    }
+
     update();
     let hovBub = hoverBubble();
     
-    push();
-        imageMode(CENTER);
-        let multi = 1;
-
-        if (this.backgroundImage.width / width > this.backgroundImage.height / height) {
-            multi = height / this.backgroundImage.height;
-        } else {
-            multi = width / this.backgroundImage.width;
-        }
-
-        // Draw the image at the center of the canvas
-        image(this.backgroundImage, width / 2, height / 2, this.backgroundImage.width * multi, this.backgroundImage.height * multi);   
-    pop();
+    setBackgroundImage(this.backgroundImage);
 
     filter(BLUR);
     background(color(0, 0, 0, 0.5));
@@ -250,12 +271,33 @@ function draw() {
     fill(color(100, 0.4));
     textAlign(LEFT, BOTTOM);  
     text("LEFT CLICK: POP, RIGHT CLICK: UNPOP", 10, height-10);
+}
+
+function setBackgroundImage(newImage){
+    push();
+        imageMode(CENTER);
+        let multi = 1;
+
+        if (newImage.width / width > newImage.height / height) {
+            multi = height / newImage.height;
+        } else {
+            multi = width / newImage.width;
+        }
+
+        // Draw the image at the center of the canvas
+        image(newImage, width / 2, height / 2, newImage.width * multi, newImage.height * multi);   
+    pop();
 
 }
 
 function mousePressed(){
     let toPop = hoverBubble();
     
+    if (isTutorial && dist(mouseX, mouseY, width/2, height/2) < this.tutrad){
+        this.popsound.play();
+        isTutorial = false;
+    }
+
     if (toPop != null ){
 
         if (mouseButton === LEFT){
