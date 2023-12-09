@@ -7,6 +7,9 @@ let started = false;
 
 let backgroundImage;
 
+let popsound;
+let antipopsound;
+
 //TODO: bug, can remove genre bubble, have a reset button?
 //TODO: minor bug, link should be automatically added to bubbles
 
@@ -16,11 +19,16 @@ function preload() {
     this.controller = BubbleController.getInstance();
 
     this.img = loadImage("./data/img/wallpaper.jpeg");
+
+    this.popsound = loadSound("./data/popsound2.mp3");
+    this.antipopsound = loadSound("./data/waterdrop.mp3");
 }
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
     drawingContext.canvas.willReadFrequently = true;
+    this.popsound.amp(0.5);
+    this.antipopsound.amp(0.5);
 
     colorMode(HSB, 360, 100, 100);
     ellipseMode(RADIUS);
@@ -39,15 +47,16 @@ function start(){
     // All particles/bubbles must collide
     completeWorld = new c2.World(new c2.Rect(0, 0, width, height));
     let c = new c2.Collision();
-    c.strength = 0.05;
+    c.strength = 0.2;
     completeWorld.addInteractionForce(c);
-    completeWorld.friction = 1;
+    completeWorld.friction = 0.01;
 
     dataBubbles = this.controller.getAllBubbles();
     viewBubbles = [];
     for(let bubble of dataBubbles){
-        let radius = min(width, height) / 10;
-        let bub = new ViewBubble(bubble, 10, radius);
+        //RADIUS START
+        let radius = min(width, height) / 12;
+        let bub = new ViewBubble(bubble, 100, radius);
 
         completeWorld.addParticle(bub.c2World.particles[0]);
         viewBubbles.push(bub);
@@ -124,6 +133,12 @@ function popBubble(vBubble){
     }
 
     for (let i = 0; i < bubblesToPop.length; i++) {
+
+        if (typeof this.popsound !== 'undefined') {
+            this.popsound.rate(random(0.5, 2));
+            this.popsound.play();
+        }
+
         let parentParticle = vBubble.c2World.particles[0];
 
         let childBubble = new ViewBubble(
@@ -215,6 +230,7 @@ function draw() {
         image(this.backgroundImage, width / 2, height / 2, this.backgroundImage.width * multi, this.backgroundImage.height * multi);   
     pop();
 
+    filter(BLUR);
     background(color(0, 0, 0, 0.5));
 
     for(let bub of viewBubbles){
@@ -253,6 +269,11 @@ function mousePressed(){
         }
 
         if (mouseButton === RIGHT) {
+            if (typeof this.antipopsound !== 'undefined') {
+                this.antipopsound.rate(random(0.5, 2));
+                this.antipopsound.play();
+            }
+    
             console.log("REMOVE " + toPop.data.name);
             // Remove children
             for(let child of getChild([toPop])) {
