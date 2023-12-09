@@ -157,7 +157,7 @@ class ViewBubble{
 
         noStroke();
         if (this.isHighlighted){
-            fill(color(0, 0, 100, 0.1));
+            fill(color(0, 0, 100, 0.2));
             circle(p.position.x, p.position.y, size + 12);
         }
         // The image

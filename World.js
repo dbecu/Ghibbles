@@ -7,11 +7,10 @@ let started = false;
 
 let backgroundImage;
 
+//TODO: bug, can remove genre bubble, have a reset button?
+//TODO: minor bug, link should be automatically added to bubbles
+
 function preload() {
-    // createCanvas(windowWidth, windowHeight);
-
-    // text("LOADING",windowWidth/2, windowHeight/2);
-
     shape = createGraphics(windowWidth, windowHeight);
 
     this.controller = BubbleController.getInstance();
@@ -39,9 +38,10 @@ function start(){
 
     // All particles/bubbles must collide
     completeWorld = new c2.World(new c2.Rect(0, 0, width, height));
-        let c = new c2.Collision();
-    c.strength = 0.2;
+    let c = new c2.Collision();
+    c.strength = 0.05;
     completeWorld.addInteractionForce(c);
+    completeWorld.friction = 1;
 
     dataBubbles = this.controller.getAllBubbles();
     viewBubbles = [];
@@ -62,7 +62,7 @@ function update(){
     }
 
     for(let bub of viewBubbles.filter(x => x.data.type == BubbleType.Genre)){
-        if (random(1) < 0.01){
+        if (random(1) < 0.005){
             // radius of where they should move
             let rad = 50;
             let pos = bub.c2World.particles[0].position;
@@ -257,7 +257,9 @@ function mousePressed(){
             // Remove children
             for(let child of getChild([toPop])) {
                 console.log(child);
-                viewBubbles.splice(viewBubbles.findIndex(x => x.data.id == child.data.id), 1);
+                if (child.data.type != BubbleType.Genre){
+                    viewBubbles.splice(viewBubbles.findIndex(x => x.data.id == child.data.id), 1);
+                }
             }
 
             if (toPop.data.type != BubbleType.Genre){
