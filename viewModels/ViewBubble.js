@@ -11,7 +11,7 @@ class ViewBubble{
 
         //test
         this.c2World = new c2.World(new c2.Rect(0, 0, width, height));
-                this.c2World.addInteractionForce(new c2.Gravitation(0.5));
+        this.c2World.addInteractionForce(new c2.Gravitation(0.9));
 
         if (x == null)  x = random(radius, width - radius);
         if (y == null) y = random(radius, width - radius);
@@ -37,7 +37,7 @@ class ViewBubble{
                 this.anchoredTo[0].c2World.particles[0].position.y,
                 this.c2World.particles[0].position.x, 
                 this.c2World.particles[0].position.y) >= this.anchoredTo[0].c2World.particles[0].radius + this.anchoredTo[0].c2World.particles[0].radius + 200) {
-                    this.newPoint(this.anchoredTo[0].c2World.particles[0].position.x, this.anchoredTo[0].c2World.particles[0].position.y);
+                this.newPoint(this.anchoredTo[0].c2World.particles[0].position.x, this.anchoredTo[0].c2World.particles[0].position.y);
                     // console.log(`${this.data.name} HIGH`);
                 } else {
                     // console.log(`${this.data.name} LOW`);
@@ -119,16 +119,24 @@ class ViewBubble{
 
         let size = p.radius - p.radius/10;
 
-        let innerOpacty = 0.5;
+        let innerOpacty = 0.6;
         let innerSize = size;
         let innerColor = color(0, 0, 100);
 
-        let outlineWeight = 1;
+        let outlineWeight = 0.5;
         let outlineSize = size;
 
         let textColor = color(0, 0, 0);
         let textOutlineSize = null;
-        let textSize = size / 10;
+        let myTextSize = size / 2.5;
+
+        if (!this.isActive){
+            innerOpacty = 0.8;
+            innerSize = size - 2;
+            innerColor = color(0, 0, 0);
+            textColor = color(0, 0, 40);
+            textColor.setAlpha(0.8);
+        }
 
         if (this.isHighlighted){
             size *= 1.2;
@@ -136,7 +144,7 @@ class ViewBubble{
             outlineWeight = 4;
 
             textColor = color(0, 0, 100);
-            textOutlineSize = 4;
+            textOutlineSize = 6;
 
         } else if(this.isChildHighlighted){
             size *= 1.05;
@@ -147,17 +155,10 @@ class ViewBubble{
         outlineSize = size + outlineWeight/2
         innerSize = size - 4;
 
-        if (!this.isActive){
-            innerOpacty = 0.6;
-            innerSize = size - 2;
-            innerColor = color(0, 0, 0);
-            textColor = color(0, 0, 100);
-            textColor.setAlpha(0.5);
-        }
 
         noStroke();
         if (this.isHighlighted){
-            fill(color(0, 0, 100, 0.1));
+            fill(color(0, 0, 100, 0.2));
             circle(p.position.x, p.position.y, size + 12);
         }
         // The image
@@ -183,11 +184,19 @@ class ViewBubble{
         }
         fill(textColor);
 
-        // textSize(12);
         textAlign(CENTER, CENTER);  
-        text(this.data.name, p.position.x, p.position.y);    
+        textSize(myTextSize);
+        text(this.#lineBreakTheNames(this.data.name), p.position.x, p.position.y);    
+ 
 
         pop();
+    }
+
+
+    #lineBreakTheNames(name){
+        let words = name.split(' ');
+        let stringWithLineBreaks = words.join('\n');
+        return stringWithLineBreaks;
     }
 
 }

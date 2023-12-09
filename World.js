@@ -7,21 +7,31 @@ let started = false;
 
 let backgroundImage;
 
+let popsound;
+let antipopsound;
+
+let isTutorial = true;
+
+
+//TODO: bug, can remove genre bubble, have a reset button?
+//TODO: minor bug, link should be automatically added to bubbles
+
 function preload() {
-    // createCanvas(windowWidth, windowHeight);
-
-    // text("LOADING",windowWidth/2, windowHeight/2);
-
     shape = createGraphics(windowWidth, windowHeight);
 
     this.controller = BubbleController.getInstance();
 
     this.img = loadImage("./data/img/wallpaper.jpeg");
+
+    this.popsound = loadSound("./data/popsound2.mp3");
+    this.antipopsound = loadSound("./data/waterdrop.mp3");
 }
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
     drawingContext.canvas.willReadFrequently = true;
+    this.popsound.amp(0.5);
+    this.antipopsound.amp(0.5);
 
     colorMode(HSB, 360, 100, 100);
     ellipseMode(RADIUS);
@@ -30,8 +40,33 @@ function setup() {
         element.addEventListener("contextmenu", (e) => e.preventDefault());
     }
 
+    isTutorial = true;
     setupReady = true;
     this.backgroundImage = this.img;
+}
+
+function tutorial(){
+    setBackgroundImage(this.backgroundImage);
+    let weight = 2;
+    this.tutrad = min(width, height) / 3.5;
+    let bubColour = color(0, 0, 100);
+    bubColour.setAlpha(0.6);
+
+    if (dist(mouseX, mouseY, width/2, height/2) < this.tutrad) {
+        this.tutrad += 10;
+        weight += 2;
+        bubColour.setAlpha(0.75);
+    }
+
+    strokeWeight(weight);
+    stroke(color(30, 100, 150));
+    fill(bubColour);
+    circle(width/2, height/2, this.tutrad);
+
+
+    textAlign(CENTER, CENTER);  
+    textSize(64);
+    text(`GHIBBLES \nClick me to start`, width/2, height/2);    
 }
 
 function start(){
@@ -39,22 +74,24 @@ function start(){
 
     // All particles/bubbles must collide
     completeWorld = new c2.World(new c2.Rect(0, 0, width, height));
-        let c = new c2.Collision();
+    let c = new c2.Collision();
     c.strength = 0.2;
     completeWorld.addInteractionForce(c);
+    completeWorld.friction = 0.01;
 
     dataBubbles = this.controller.getAllBubbles();
     viewBubbles = [];
     for(let bubble of dataBubbles){
-        let radius = min(width, height) / 10;
-        let bub = new ViewBubble(bubble, 10, radius);
+        //RADIUS START
+        let radius = min(width, height) / 12;
+        let bub = new ViewBubble(bubble, 100, radius);
 
         completeWorld.addParticle(bub.c2World.particles[0]);
         viewBubbles.push(bub);
     }
 }
 
-function update(){    
+function update(){   
     completeWorld.update();
 
     for(let bub of viewBubbles){
@@ -62,7 +99,7 @@ function update(){
     }
 
     for(let bub of viewBubbles.filter(x => x.data.type == BubbleType.Genre)){
-        if (random(1) < 0.01){
+        if (random(1) < 0.005){
             // radius of where they should move
             let rad = 50;
             let pos = bub.c2World.particles[0].position;
@@ -124,6 +161,12 @@ function popBubble(vBubble){
     }
 
     for (let i = 0; i < bubblesToPop.length; i++) {
+
+        if (typeof this.popsound !== 'undefined') {
+            this.popsound.rate(random(0.5, 2));
+            this.popsound.play();
+        }
+
         let parentParticle = vBubble.c2World.particles[0];
 
         let childBubble = new ViewBubble(
@@ -198,23 +241,17 @@ function draw() {
 
     if (!started) return;
 
+    if (isTutorial){
+        tutorial();
+        return;
+    }
+
     update();
     let hovBub = hoverBubble();
     
-    push();
-        imageMode(CENTER);
-        let multi = 1;
+    setBackgroundImage(this.backgroundImage);
 
-        if (this.backgroundImage.width / width > this.backgroundImage.height / height) {
-            multi = height / this.backgroundImage.height;
-        } else {
-            multi = width / this.backgroundImage.width;
-        }
-
-        // Draw the image at the center of the canvas
-        image(this.backgroundImage, width / 2, height / 2, this.backgroundImage.width * multi, this.backgroundImage.height * multi);   
-    pop();
-
+    filter(BLUR);
     background(color(0, 0, 0, 0.5));
 
     for(let bub of viewBubbles){
@@ -234,12 +271,33 @@ function draw() {
     fill(color(100, 0.4));
     textAlign(LEFT, BOTTOM);  
     text("LEFT CLICK: POP, RIGHT CLICK: UNPOP", 10, height-10);
+}
+
+function setBackgroundImage(newImage){
+    push();
+        imageMode(CENTER);
+        let multi = 1;
+
+        if (newImage.width / width > newImage.height / height) {
+            multi = height / newImage.height;
+        } else {
+            multi = width / newImage.width;
+        }
+
+        // Draw the image at the center of the canvas
+        image(newImage, width / 2, height / 2, newImage.width * multi, newImage.height * multi);   
+    pop();
 
 }
 
 function mousePressed(){
     let toPop = hoverBubble();
     
+    if (isTutorial && dist(mouseX, mouseY, width/2, height/2) < this.tutrad){
+        this.popsound.play();
+        isTutorial = false;
+    }
+
     if (toPop != null ){
 
         if (mouseButton === LEFT){
@@ -253,11 +311,18 @@ function mousePressed(){
         }
 
         if (mouseButton === RIGHT) {
+            if (typeof this.antipopsound !== 'undefined') {
+                this.antipopsound.rate(random(0.5, 2));
+                this.antipopsound.play();
+            }
+    
             console.log("REMOVE " + toPop.data.name);
             // Remove children
             for(let child of getChild([toPop])) {
                 console.log(child);
-                viewBubbles.splice(viewBubbles.findIndex(x => x.data.id == child.data.id), 1);
+                if (child.data.type != BubbleType.Genre){
+                    viewBubbles.splice(viewBubbles.findIndex(x => x.data.id == child.data.id), 1);
+                }
             }
 
             if (toPop.data.type != BubbleType.Genre){
