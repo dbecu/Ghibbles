@@ -6,6 +6,7 @@ let controllerReady = false;
 let started = false;
 
 let backgroundImage;
+let refreshImage;
 
 let popsound;
 let antipopsound;
@@ -20,6 +21,7 @@ function preload() {
     this.controller = BubbleController.getInstance();
 
     this.img = loadImage("./data/img/wallpaper.jpeg");
+    this.refreshImage = loadImage("./data/img/refresh.png");
 
     this.popsound = loadSound("./data/popsound2.mp3");
     this.antipopsound = loadSound("./data/waterdrop.mp3");
@@ -43,14 +45,22 @@ function setup() {
     this.backgroundImage = this.img;
 }
 
+
+function restart(){
+    isTutorial = true;
+    this.backgroundImage = this.img;
+    start();
+}
+
 function tutorial(){
-    setBackgroundImage(this.backgroundImage);
+    setBackgroundImage(this.img);
     let weight = 2;
     this.tutrad = min(width, height) / 3.5;
     let bubColour = color(0, 0, 100);
     bubColour.setAlpha(0.6);
 
     if (dist(mouseX, mouseY, width/2, height/2) < this.tutrad) {
+        cursor(HAND);
         this.tutrad += 10;
         weight += 2;
         bubColour.setAlpha(0.75);
@@ -61,10 +71,15 @@ function tutorial(){
     fill(bubColour);
     circle(width/2, height/2, this.tutrad);
 
-
     textAlign(CENTER, CENTER);  
     textSize(min(width, height) / 16);
-    text(`GHIBBLES \nClick me to start`, width/2, height/2);    
+    text(`GHIBBLES \nClick me to start`, width/2, height/2);  
+    
+    noStroke();
+    textSize(min(width, height) / 20);
+    fill(color(0, 0, 100, 0.8));
+    textAlign(LEFT, TOP);  
+    text("LEFT CLICK: POP\nRIGHT CLICK: UNPOP", 12, 12);
 }
 
 function start(){
@@ -238,6 +253,9 @@ function hoverBubble(){
 
         if (chosenBubble.isHighlighted){
             console.log("!!!");
+            if (chosenBubble.isActive){
+                cursor(HAND);
+            }
         }
 
         return chosenBubble;
@@ -245,6 +263,8 @@ function hoverBubble(){
 }
 
 function draw() {
+    cursor(ARROW);
+
     if (setupReady && controllerReady && !started){
         start();
         return;
@@ -272,16 +292,28 @@ function draw() {
     showRelations(hovBub);
 
     // Frame rate
-    noStroke();
-    textSize(16);
-    fill(color(100, 0.4));
-    textAlign(LEFT, TOP);  
-    text(int(frameRate()), 10, 10);
+    // noStroke();
+    // textSize(16);
+    // fill(color(100, 0.4));
+    // textAlign(LEFT, TOP);  
+    // text(int(frameRate()), 10, 10);
 
-    textSize(16);
-    fill(color(100, 0.4));
-    textAlign(LEFT, BOTTOM);  
-    text("LEFT CLICK: POP, RIGHT CLICK: UNPOP", 10, height-10);
+
+    let rad = 24;
+    let imageSize = rad + 12;
+    let marg = 12;
+    noStroke();
+    if (dist(mouseX, mouseY, width - rad - marg, rad + marg) < rad){
+        fill(50, 80, 60);
+        rad += 4;
+        cursor(HAND);
+        if (mouseIsPressed === true) restart();
+    } else {
+        fill(50, 50, 80);
+    }
+
+    circle(width - rad - marg, rad + marg, rad);
+    image(this.refreshImage, width - rad - marg - imageSize/2, rad + marg - imageSize/2, imageSize, imageSize);
 }
 
 function setBackgroundImage(newImage){
@@ -310,7 +342,6 @@ function mousePressed(){
     }
 
     if (toPop != null ){
-
         if (mouseButton === LEFT){
             if (toPop.data.directChildren.length > 0) { 
                 popBubble(toPop); 
@@ -327,11 +358,9 @@ function mousePressed(){
                 this.antipopsound.play();
             }
     
-            console.log("REMOVE " + toPop.data.name);
             // Remove children
             for(let child of getChild([toPop])) {
                 if (child.data.type != BubbleType.Genre){
-                    console.log(child);
                     let index = viewBubbles.findIndex(x => x.data.id == child.data.id);
                     if (index != -1){
                         viewBubbles.splice(index, 1);
@@ -340,8 +369,6 @@ function mousePressed(){
             }
 
             if (toPop.data.type != BubbleType.Genre){
-                console.log("toPop");
-                console.log(toPop);
                 // Remove clicked one
                 viewBubbles.splice(viewBubbles.findIndex(x => x.data.id == toPop.data.id), 1);
             }
