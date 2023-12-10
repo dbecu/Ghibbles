@@ -130,13 +130,6 @@ class ViewBubble{
         let textOutlineSize = null;
         let myTextSize = size / 2.5;
 
-        if (!this.isActive){
-            innerOpacty = 0.8;
-            innerSize = size - 2;
-            innerColor = color(0, 0, 0);
-            textColor = color(0, 0, 40);
-            textColor.setAlpha(0.8);
-        }
 
         if (this.isHighlighted){
             size *= 1.2;
@@ -151,6 +144,19 @@ class ViewBubble{
             innerOpacty = 0.4;
             outlineWeight = 2;
         } 
+
+        
+        if (!this.isActive){
+            innerOpacty = 0.8;
+            innerSize = size - 2;
+            innerColor = color(0, 0, 0);
+            textColor = color(0, 0, 40);
+            textColor.setAlpha(0.8);
+
+            if (this.isHighlighted){
+                textColor.setAlpha(1);
+            }
+        }
 
         outlineSize = size + outlineWeight/2
         innerSize = size - 4;
