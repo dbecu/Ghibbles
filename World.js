@@ -6,14 +6,13 @@ let controllerReady = false;
 let started = false;
 
 let backgroundImage;
+let refreshImage;
 
 let popsound;
 let antipopsound;
 
 let isTutorial = true;
 
-
-//TODO: bug, can remove genre bubble, have a reset button?
 //TODO: minor bug, link should be automatically added to bubbles
 
 function preload() {
@@ -22,6 +21,7 @@ function preload() {
     this.controller = BubbleController.getInstance();
 
     this.img = loadImage("./data/img/wallpaper.jpeg");
+    this.refreshImage = loadImage("./data/img/refresh.png");
 
     this.popsound = loadSound("./data/popsound2.mp3");
     this.antipopsound = loadSound("./data/waterdrop.mp3");
@@ -45,14 +45,22 @@ function setup() {
     this.backgroundImage = this.img;
 }
 
+
+function restart(){
+    isTutorial = true;
+    this.backgroundImage = this.img;
+    start();
+}
+
 function tutorial(){
-    setBackgroundImage(this.backgroundImage);
+    setBackgroundImage(this.img);
     let weight = 2;
     this.tutrad = min(width, height) / 3.5;
     let bubColour = color(0, 0, 100);
     bubColour.setAlpha(0.6);
 
     if (dist(mouseX, mouseY, width/2, height/2) < this.tutrad) {
+        cursor(HAND);
         this.tutrad += 10;
         weight += 2;
         bubColour.setAlpha(0.75);
@@ -63,10 +71,15 @@ function tutorial(){
     fill(bubColour);
     circle(width/2, height/2, this.tutrad);
 
-
     textAlign(CENTER, CENTER);  
-    textSize(64);
-    text(`GHIBBLES \nClick me to start`, width/2, height/2);    
+    textSize(min(width, height) / 16);
+    text(`GHIBBLES \nClick me to start`, width/2, height/2);  
+    
+    noStroke();
+    textSize(min(width, height) / 20);
+    fill(color(0, 0, 100, 0.8));
+    textAlign(LEFT, TOP);  
+    text("LEFT CLICK: POP\nRIGHT CLICK: UNPOP", 12, 12);
 }
 
 function start(){
@@ -113,15 +126,6 @@ function update(){
     }
 }
 
-function genreBubbleChangeSmallSpots(){
-
-}
-
-function genreBubbleChangeBigSpots(){
-
-}
-
-
 function newPoint(vBubble, x, y){
     vBubble.c2World.removeForce(vBubble.c2World.currentPoint);
      
@@ -153,12 +157,20 @@ function bubbleInactiveChildren(vBubble){
 
 function popBubble(vBubble){
     //Finds which child bubble is already popped active from other parent bubble
-    let amountToPopEachTime = 2;
+    let amountToPopEachTime = 4;
     let allChildBubbles = this.bubbleInactiveChildren(vBubble);
     let bubblesToPop = allChildBubbles.slice(0, amountToPopEachTime);
+    // console.log(`^^^^^^^^^ ${allChildBubbles.length} <= ${amountToPopEachTime}`)
     if (allChildBubbles.length <= amountToPopEachTime){
+        // console.log("FALSE PLEASE")
+
         vBubble.isActive = false;
+        // vBubble.isActive = false;
+        // console.log(vBubble);
     }
+
+    // vBubble.isActive = allChildBubbles.length > amountToPopEachTime;
+    // console.log(vBubble);
 
     for (let i = 0; i < bubblesToPop.length; i++) {
 
@@ -178,13 +190,33 @@ function popBubble(vBubble){
         vBubble.c2World.addParticle(childBubble.c2World.particles[0]); //Add particle to parent
         completeWorld.addParticle(childBubble.c2World.particles[0]); //Add particle to complete world
 
-        childBubble.isActive = (childBubble.data.directChildren.length > 0);
-        childBubble.anchoredTo.push(vBubble);
+        //childBubble is a parent
+        for(let bub of viewBubbles){
+            for(let dChild of childBubble.data.directChildren){
+                if (bub.data.id == dChild.id){
+                    bub.anchoredTo.push(childBubble);
+                }
+            }
+        }
 
+        //childBubble is a child
+        for(let bub of viewBubbles){
+            for(let dChild of bub.data.directChildren){
+                if (dChild.id == childBubble.data.id){
+                    childBubble.anchoredTo.push(bub);
+                }
+            }
+
+            let count = bub.data.directChildren.length - viewBubbles.filter(vBub => bub.data.directChildren.some(dChild => dChild.id == vBub.data.id)).length;
+            bub.isActive =count > 0;
+        }
+
+        let commonItemsCount = viewBubbles.filter(vBub => childBubble.data.directChildren.some(dChild => dChild.id == vBub.data.id)).length;
+
+        childBubble.isActive = (childBubble.data.directChildren.length - commonItemsCount > 0);
+        childBubble.anchoredTo.push(vBubble);
         viewBubbles.push(childBubble);
     }
-
-    console.log(viewBubbles);
 }
 
 
@@ -227,6 +259,9 @@ function hoverBubble(){
 
         if (chosenBubble.isHighlighted){
             console.log("!!!");
+            if (chosenBubble.isActive){
+                cursor(HAND);
+            }
         }
 
         return chosenBubble;
@@ -234,6 +269,8 @@ function hoverBubble(){
 }
 
 function draw() {
+    cursor(ARROW);
+
     if (setupReady && controllerReady && !started){
         start();
         return;
@@ -251,7 +288,7 @@ function draw() {
     
     setBackgroundImage(this.backgroundImage);
 
-    filter(BLUR);
+    // filter(BLUR);
     background(color(0, 0, 0, 0.5));
 
     for(let bub of viewBubbles){
@@ -261,16 +298,28 @@ function draw() {
     showRelations(hovBub);
 
     // Frame rate
-    noStroke();
-    textSize(16);
-    fill(color(100, 0.4));
-    textAlign(LEFT, TOP);  
-    text(int(frameRate()), 10, 10);
+    // noStroke();
+    // textSize(16);
+    // fill(color(100, 0.4));
+    // textAlign(LEFT, TOP);  
+    // text(int(frameRate()), 10, 10);
 
-    textSize(16);
-    fill(color(100, 0.4));
-    textAlign(LEFT, BOTTOM);  
-    text("LEFT CLICK: POP, RIGHT CLICK: UNPOP", 10, height-10);
+
+    let rad = 24;
+    let imageSize = rad + 12;
+    let marg = 12;
+    noStroke();
+    if (dist(mouseX, mouseY, width - rad - marg, rad + marg) < rad){
+        fill(50, 80, 60);
+        rad += 4;
+        cursor(HAND);
+        if (mouseIsPressed === true) restart();
+    } else {
+        fill(50, 50, 80);
+    }
+
+    circle(width - rad - marg, rad + marg, rad);
+    image(this.refreshImage, width - rad - marg - imageSize/2, rad + marg - imageSize/2, imageSize, imageSize);
 }
 
 function setBackgroundImage(newImage){
@@ -299,13 +348,10 @@ function mousePressed(){
     }
 
     if (toPop != null ){
-
         if (mouseButton === LEFT){
             if (toPop.data.directChildren.length > 0) { 
                 popBubble(toPop); 
-            } else {
-                toPop.isActive = false;
-            }
+            } 
 
             this.backgroundImage = toPop.data.image;
         }
@@ -316,12 +362,13 @@ function mousePressed(){
                 this.antipopsound.play();
             }
     
-            console.log("REMOVE " + toPop.data.name);
             // Remove children
             for(let child of getChild([toPop])) {
-                console.log(child);
                 if (child.data.type != BubbleType.Genre){
-                    viewBubbles.splice(viewBubbles.findIndex(x => x.data.id == child.data.id), 1);
+                    let index = viewBubbles.findIndex(x => x.data.id == child.data.id);
+                    if (index != -1){
+                        viewBubbles.splice(index, 1);
+                    }
                 }
             }
 
@@ -346,7 +393,7 @@ function getChild(checkBubbles, index){
             for (let anchor of bub.anchoredTo){
                 if (checkBub.data.id == anchor.data.id){
 
-                    let tempColor = color(hue(checkBub.data.color), saturation(checkBub.data.color), brightness(checkBub.data.color) - 20);
+                    let tempColor = color(checkBub.color);
                     tempColor.setAlpha(1 - constrain((index * 0.2), 0.1, 1));
                     stroke(tempColor);
                     // strokeWeight(getBubbleTypeNum(anchor.data.type / 2, true));
@@ -380,7 +427,7 @@ function getParent(checkBubbles, index) {
     for(let checkBub of checkBubbles){
         for (let a of checkBub.anchoredTo){
 
-            let tempColor = color(hue(checkBub.data.color), saturation(checkBub.data.color), brightness(checkBub.data.color) + 20);
+            let tempColor = color(checkBub.color);
             tempColor.setAlpha(1 - constrain((index * 0.2), 0.1, 1));
             stroke(tempColor);
             // strokeWeight(getBubbleTypeNum(a.data.type / 2, true));
