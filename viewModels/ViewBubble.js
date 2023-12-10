@@ -1,7 +1,34 @@
 class ViewBubble{
     constructor(bubble, mass, radius, x = null, y = null){
-        this.data = bubble;        
-        this.color = bubble.color;
+        this.data = bubble;     
+
+
+        let saturation = 100;
+        let brightness = 100;
+        switch(this.data.type){
+            case BubbleType.Genre:
+                saturation = 100;
+                brightness = 80;
+                break;
+            case BubbleType.Subgenre:
+                saturation = 90;
+                brightness = 70;
+                break;
+            case BubbleType.Movie:
+                saturation = 80;
+                brightness = 60;
+                break;
+            case BubbleType.Character:
+                saturation = 70;
+                brightness = 50;
+                break;
+            case BubbleType.Attribute:
+                saturation = 60;
+                brightness = 40;
+                break;
+        }
+        
+        this.color = color(hue(bubble.color), saturation, brightness);
 
         this.isActive = true;
         this.isHighlighted = false;   
@@ -74,40 +101,6 @@ class ViewBubble{
 
     display(){
         this.#displayBubble();
-        // this.#displayRelation();
-    }
-
-    #displayRelation(){
-        let weight = 1;
-        switch(this.data.type){
-            case BubbleType.Subgenre:
-                weight = 4;
-                break;
-            case BubbleType.Movie:
-                weight = 3;
-                break;
-            case BubbleType.Character:
-                weight = 2;
-                break;
-            case BubbleType.Attribute:
-                weight = 1;
-                break;
-        }
-
-        if (this.isHighlighted){
-            stroke(color(50, weight * 10, 90, 1)); //HSB
-            strokeWeight(weight * 2);
-        } else {
-            stroke(color(200, 60, 50, 0.1));
-            strokeWeight(weight / 2);
-        }
-
-        for(let a of this.anchoredTo){
-            let parentPos = a.c2World.particles[0].position;
-            let childPos = this.c2World.particles[0].position;
-            fill(color(0));
-            line(parentPos.x, parentPos.y, childPos.x, childPos.y);
-        }
     }
 
 

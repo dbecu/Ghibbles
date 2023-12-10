@@ -160,9 +160,17 @@ function popBubble(vBubble){
     let amountToPopEachTime = 4;
     let allChildBubbles = this.bubbleInactiveChildren(vBubble);
     let bubblesToPop = allChildBubbles.slice(0, amountToPopEachTime);
+    // console.log(`^^^^^^^^^ ${allChildBubbles.length} <= ${amountToPopEachTime}`)
     if (allChildBubbles.length <= amountToPopEachTime){
+        // console.log("FALSE PLEASE")
+
         vBubble.isActive = false;
+        // vBubble.isActive = false;
+        // console.log(vBubble);
     }
+
+    // vBubble.isActive = allChildBubbles.length > amountToPopEachTime;
+    // console.log(vBubble);
 
     for (let i = 0; i < bubblesToPop.length; i++) {
 
@@ -209,8 +217,6 @@ function popBubble(vBubble){
         childBubble.anchoredTo.push(vBubble);
         viewBubbles.push(childBubble);
     }
-
-    console.log(viewBubbles);
 }
 
 
@@ -345,9 +351,7 @@ function mousePressed(){
         if (mouseButton === LEFT){
             if (toPop.data.directChildren.length > 0) { 
                 popBubble(toPop); 
-            } else {
-                toPop.isActive = false;
-            }
+            } 
 
             this.backgroundImage = toPop.data.image;
         }
@@ -389,7 +393,7 @@ function getChild(checkBubbles, index){
             for (let anchor of bub.anchoredTo){
                 if (checkBub.data.id == anchor.data.id){
 
-                    let tempColor = color(hue(checkBub.data.color), saturation(checkBub.data.color), brightness(checkBub.data.color) - 20);
+                    let tempColor = color(checkBub.color);
                     tempColor.setAlpha(1 - constrain((index * 0.2), 0.1, 1));
                     stroke(tempColor);
                     // strokeWeight(getBubbleTypeNum(anchor.data.type / 2, true));
@@ -423,7 +427,7 @@ function getParent(checkBubbles, index) {
     for(let checkBub of checkBubbles){
         for (let a of checkBub.anchoredTo){
 
-            let tempColor = color(hue(checkBub.data.color), saturation(checkBub.data.color), brightness(checkBub.data.color) + 20);
+            let tempColor = color(checkBub.color);
             tempColor.setAlpha(1 - constrain((index * 0.2), 0.1, 1));
             stroke(tempColor);
             // strokeWeight(getBubbleTypeNum(a.data.type / 2, true));
