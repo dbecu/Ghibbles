@@ -194,7 +194,17 @@ class ViewBubble{
 
     #lineBreakTheNames(name){
         let words = name.split(' ');
-        let stringWithLineBreaks = words.join('\n');
+
+        let joinedWords = [];
+        for(let index = 0; index < words.length; index++){
+            if (index < words.length - 1 && words[index].length + words[index + 1].length <= 10) {
+                joinedWords.push(`${words[index]} ${words[index + 1]}`);
+                index++;
+            } else {
+                joinedWords.push(words[index]);
+            }
+        }
+        let stringWithLineBreaks = joinedWords.join('\n');
         return stringWithLineBreaks;
     }
 
