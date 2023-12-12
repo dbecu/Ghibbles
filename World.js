@@ -66,6 +66,7 @@ function tutorial(){
         bubColour.setAlpha(0.75);
     }
 
+    push();
     strokeWeight(weight);
     stroke(color(30, 100, 150));
     fill(bubColour);
@@ -80,6 +81,7 @@ function tutorial(){
     fill(color(0, 0, 100, 0.8));
     textAlign(LEFT, TOP);  
     text("LEFT CLICK: POP\nRIGHT CLICK: UNPOP", 12, 12);
+    pop();
 }
 
 function start(){
@@ -96,7 +98,7 @@ function start(){
     viewBubbles = [];
     for(let bubble of dataBubbles){
         //RADIUS START
-        let radius = min(width, height) / 12;
+        let radius = min(width, height) / 10;
         let bub = new ViewBubble(bubble, 100, radius);
 
         completeWorld.addParticle(bub.c2World.particles[0]);
@@ -160,17 +162,6 @@ function popBubble(vBubble){
     let amountToPopEachTime = 4;
     let allChildBubbles = this.bubbleInactiveChildren(vBubble);
     let bubblesToPop = allChildBubbles.slice(0, amountToPopEachTime);
-    // console.log(`^^^^^^^^^ ${allChildBubbles.length} <= ${amountToPopEachTime}`)
-    if (allChildBubbles.length <= amountToPopEachTime){
-        // console.log("FALSE PLEASE")
-
-        vBubble.isActive = false;
-        // vBubble.isActive = false;
-        // console.log(vBubble);
-    }
-
-    // vBubble.isActive = allChildBubbles.length > amountToPopEachTime;
-    // console.log(vBubble);
 
     for (let i = 0; i < bubblesToPop.length; i++) {
 
@@ -216,6 +207,10 @@ function popBubble(vBubble){
         childBubble.isActive = (childBubble.data.directChildren.length - commonItemsCount > 0);
         childBubble.anchoredTo.push(vBubble);
         viewBubbles.push(childBubble);
+    }
+
+    if (allChildBubbles.length <= amountToPopEachTime){
+        vBubble.isActive = false;
     }
 }
 
@@ -286,18 +281,21 @@ function draw() {
     }
 
     update();
-    let hovBub = hoverBubble();
-    
+
     setBackgroundImage(this.backgroundImage);
 
     // filter(BLUR);
-    background(color(0, 0, 0, 0.8));
+    background(color(0, 0, 0, 0.7));
 
     for(let bub of viewBubbles){
         bub.display();
     }
 
+    push();
+    let hovBub = hoverBubble();
     showRelations(hovBub);
+    pop();
+
 
     // Frame rate
     // noStroke();
@@ -365,6 +363,10 @@ function mousePressed(){
                 this.antipopsound.rate(random(0.5, 2));
                 this.antipopsound.play();
             }
+
+            for(let parent of toPop.anchoredTo){
+                parent.isActive = true;
+            }
     
             // Remove children
             for(let child of getChild([toPop])) {
@@ -397,6 +399,7 @@ function getChild(checkBubbles, index){
             for (let anchor of bub.anchoredTo){
                 if (checkBub.data.id == anchor.data.id){
 
+                    push();
                     let tempColor = color(checkBub.color);
                     tempColor.setAlpha(1 - constrain((index * 0.2), 0.1, 1));
                     stroke(tempColor);
@@ -411,6 +414,7 @@ function getChild(checkBubbles, index){
                     
 
                     bubs.push(bub);
+                    pop();
 
                     for(let cBub of getChild([bub], index + 1)){
                         bubs.push(cBub);
@@ -431,6 +435,7 @@ function getParent(checkBubbles, index) {
     for(let checkBub of checkBubbles){
         for (let a of checkBub.anchoredTo){
 
+            push();
             let tempColor = color(checkBub.color);
             tempColor.setAlpha(1 - constrain((index * 0.2), 0.1, 1));
             stroke(tempColor);
@@ -442,8 +447,11 @@ function getParent(checkBubbles, index) {
                 a.c2World.particles[0].position.x, 
                 a.c2World.particles[0].position.y)
 
+            pop();
             bubs.push(a);
         }
+        
+        
 
         for (let a of getParent(checkBub.anchoredTo, index + 1)){
             bubs.push(a);

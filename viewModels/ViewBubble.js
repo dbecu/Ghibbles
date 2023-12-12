@@ -104,8 +104,12 @@ class ViewBubble{
     }
 
 
-    #displayBubble(){
-
+    #displayBubble(){    
+        // let tColor = color(this.color);
+        // if (brightness(this.color) == 0) {
+        //     this.color = color(hue(this.data.color), saturation, brightness);
+        // }
+        
         push();
 
         let p = this.c2World.particles[0];
@@ -116,13 +120,12 @@ class ViewBubble{
         let innerSize = size;
         let innerColor = color(0, 0, 100);
 
-        let outlineWeight = 0.5;
+        let outlineWeight = 2;
         let outlineSize = size;
 
         let textColor = color(0, 0, 0);
         let textOutlineSize = null;
         let myTextSize = size / 2.5;
-
 
         if (this.isHighlighted){
             size *= 1.2;
@@ -135,29 +138,37 @@ class ViewBubble{
         } else if(this.isChildHighlighted){
             size *= 1.05;
             innerOpacty = 0.4;
-            outlineWeight = 2;
+            outlineWeight = 3;
         } 
 
         
-        if (!this.isActive){
+        if (!this.isActive || this.data.type == BubbleType.Attribute){
             innerOpacty = 0.8;
-            innerSize = size - 2;
-            innerColor = color(0, 0, 0);
-            textColor = color(0, 0, 40);
-            textColor.setAlpha(0.8);
+            innerSize = size;
+            innerColor = color(0, 0, 40);
+            textColor = color(0, 0, 100);
+            textColor.setAlpha(0.6);
 
             if (this.isHighlighted){
                 textColor.setAlpha(1);
             }
         }
+        else {
+            innerSize = size - 4;
+        }
+
+        if (this.data.type == BubbleType.Attribute){
+            innerColor = color(0, 0, 0);
+            textColor = color(0, 0, 100);
+            innerOpacty = 0.8;
+        }
 
         outlineSize = size + outlineWeight/2
-        innerSize = size - 4;
 
 
         noStroke();
         if (this.isHighlighted){
-            fill(color(0, 0, 100, 0.2));
+            fill(color(0, 0, 100, 0.4));
             circle(p.position.x, p.position.y, size + 12);
         }
         // The image
@@ -182,11 +193,10 @@ class ViewBubble{
             stroke(this.color);
         }
         fill(textColor);
-
         textAlign(CENTER, CENTER);  
         textSize(myTextSize);
         text(this.#lineBreakTheNames(this.data.name), p.position.x, p.position.y);    
- 
+        fill(this.color);
 
         pop();
     }
