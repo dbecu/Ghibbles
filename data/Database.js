@@ -1,7 +1,7 @@
 class Database{
 
-    #imagePath = "./data/img/og/";
-    #croppedImagePath = "./data/img/circle/";
+    #imagePath = "./data/img/raw/";
+    #croppedImagePath = "./data/img/cropped/";
     #filePath = "./data/database/";
     
     constructor(){
@@ -31,7 +31,7 @@ class Database{
             this.images[filename] = { image: loadImage(ogImagePath) };
 
             let filenameWithoutExt = filename.substring(0, filename.length - 4);
-            let circleImagePath = `${this.#croppedImagePath}${filenameWithoutExt}-circle.png`;
+            let circleImagePath = `${this.#croppedImagePath}${filenameWithoutExt}-modified.png`;
             this.croppedImages[filename] = { image: loadImage(circleImagePath) };
             
 

@@ -261,6 +261,8 @@ function hoverBubble(){
             console.log("!!!");
             if (chosenBubble.isActive){
                 cursor(HAND);
+            } else{
+                cursor(CROSS);
             }
         }
 
@@ -289,7 +291,7 @@ function draw() {
     setBackgroundImage(this.backgroundImage);
 
     // filter(BLUR);
-    background(color(0, 0, 0, 0.5));
+    background(color(0, 0, 0, 0.8));
 
     for(let bub of viewBubbles){
         bub.display();
@@ -353,7 +355,9 @@ function mousePressed(){
                 popBubble(toPop); 
             } 
 
-            this.backgroundImage = toPop.data.image;
+            if (toPop.data.type != BubbleType.Attribute){
+                this.backgroundImage = toPop.data.image;
+            }
         }
 
         if (mouseButton === RIGHT) {
