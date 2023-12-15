@@ -20,7 +20,7 @@ function preload() {
 
     this.controller = BubbleController.getInstance();
 
-    this.img = loadImage("./data/img/wallpaper.jpeg");
+    this.img = loadImage("./data/img/wallpaper.jpg");
     this.refreshImage = loadImage("./data/img/refresh.png");
 
     this.popsound = loadSound("./data/popsound2.mp3");
@@ -85,6 +85,9 @@ function tutorial(){
 }
 
 function start(){
+    var x = document.getElementById("survey-btn");
+    x.style.display = "block";
+
     started = true;
 
     // All particles/bubbles must collide
@@ -104,9 +107,11 @@ function start(){
         completeWorld.addParticle(bub.c2World.particles[0]);
         viewBubbles.push(bub);
     }
+    
 }
 
 function update(){   
+    createCanvas(windowWidth, windowHeight);
     completeWorld.update();
 
     for(let bub of viewBubbles){
@@ -345,6 +350,15 @@ function mousePressed(){
     if (isTutorial && dist(mouseX, mouseY, width/2, height/2) < this.tutrad){
         this.popsound.play();
         isTutorial = false;
+
+        var x = document.getElementById("survey-btn");
+        x.style.display = "none";
+    
+        // if (x.style.display === "none") {
+        //   x.style.display = "block";
+        // } else {
+        //   x.style.display = "none";
+        // }
     }
 
     if (toPop != null ){

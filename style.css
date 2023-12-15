@@ -3,3 +3,43 @@ body {
     margin: 0;
     overflow: hidden;
 }
+
+#survey-btn {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    z-index: 1;
+    padding: 16px;
+    border-radius: 12px;
+
+    background-color: #04AA6D; /* Green */
+    border: none;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+  
+  }
+
+#survey-btn:hover {
+    background-color: #aa0404; /* Green */
+    color: white;
+}
+
+#loading-gif{
+    position: absolute;
+    z-index: -1;
+    top: 50%;
+    left: 50%;
+    width: 500px;
+    height: 500px;
+    margin-top: -250px; /* Half the height */
+    margin-left: -250px; /* Half the width */
+  }
+
+canvas {
+position: absolute;
+/* pointer-events: none */
+}
+  

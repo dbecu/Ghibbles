@@ -143,7 +143,7 @@ class ViewBubble{
 
         
         if (!this.isActive || this.data.type == BubbleType.Attribute){
-            innerOpacty = 0.8;
+            innerOpacty = 0.9;
             innerSize = size;
             innerColor = color(0, 0, 40);
             textColor = color(0, 0, 100);
